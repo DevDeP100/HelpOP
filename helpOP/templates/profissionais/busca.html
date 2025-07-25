@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Buscar Profissionais - HelpOP{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="text-warning mb-4">
+        <i class="fas fa-search me-2"></i>Buscar Profissionais
+    </h2>
+    
+    {% if profissionais %}
+        <div class="row">
+            {% for profissional in profissionais %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-warning">
+                                {{ profissional.usuario.get_full_name|default:profissional.usuario.username }}
+                            </h5>
+                            <p class="text-muted">{{ profissional.especialidade }}</p>
+                            {% if profissional.descricao %}
+                                <p class="card-text text-light">{{ profissional.descricao|truncatewords:20 }}</p>
+                            {% endif %}
+                            <span class="badge bg-success">Aprovado</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <h4 class="text-warning">Nenhum profissional encontrado</h4>
+            <p class="text-light">Tente ajustar os filtros de busca.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

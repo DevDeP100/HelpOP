@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ veiculo.marca }} {{ veiculo.modelo }} - HelpOP{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-car me-2"></i>{{ veiculo.marca }} {{ veiculo.modelo }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Marca:</strong> {{ veiculo.marca }}</p>
+                            <p><strong>Modelo:</strong> {{ veiculo.modelo }}</p>
+                            <p><strong>Ano:</strong> {{ veiculo.ano }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Placa:</strong> {{ veiculo.placa }}</p>
+                            <p><strong>Quilometragem:</strong> {{ veiculo.km_atual }} km</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manutenções -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tools me-2"></i>Histórico de Manutenções
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if manutencoes %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Serviço</th>
+                                        <th>KM</th>
+                                        <th>Valor</th>
+                                        <th>Profissional</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for manutencao in manutencoes %}
+                                        <tr>
+                                            <td>{{ manutencao.data|date:"d/m/Y" }}</td>
+                                            <td>{{ manutencao.servico.nome|default:"-" }}</td>
+                                            <td>{{ manutencao.km }} km</td>
+                                            <td>R$ {{ manutencao.valor }}</td>
+                                            <td>{{ manutencao.profissional.usuario.get_full_name|default:"-" }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-tools" style="font-size: 3rem; color: var(--primary-yellow); opacity: 0.5;"></i>
+                            <h5 class="mt-3">Nenhuma manutenção registrada</h5>
+                            <p class="text-muted">Registre a primeira manutenção para este veículo.</p>
+                            <a href="{% url 'nova_manutencao_veiculo' veiculo.id %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Nova Manutenção
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cogs me-2"></i>Ações
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'editar_veiculo' veiculo.id %}" class="btn btn-outline-warning">
+                            <i class="fas fa-edit me-2"></i>Editar Veículo
+                        </a>
+                        <a href="{% url 'nova_manutencao_veiculo' veiculo.id %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Nova Manutenção
+                        </a>
+                        <a href="{% url 'veiculos' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

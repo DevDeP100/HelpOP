@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Profissionais - HelpOP{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="text-warning mb-4">
+                <i class="fas fa-users me-2"></i>Profissionais
+            </h2>
+            <p class="text-light mb-4">
+                Encontre os melhores profissionais do setor automotivo para cuidar do seu veículo.
+            </p>
+        </div>
+    </div>
+
+    {% if profissionais %}
+        <div class="row">
+            {% for profissional in profissionais %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-user-tie" style="font-size: 2rem; color: var(--primary-yellow);"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h5 class="card-title text-warning mb-1">
+                                        {{ profissional.usuario.get_full_name|default:profissional.usuario.username }}
+                                    </h5>
+                                    <p class="text-muted mb-0">{{ profissional.especialidade }}</p>
+                                </div>
+                            </div>
+                            
+                            {% if profissional.descricao %}
+                                <p class="card-text text-light">{{ profissional.descricao|truncatewords:20 }}</p>
+                            {% endif %}
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check me-1"></i>Aprovado
+                                </span>
+                                <a href="#" class="btn btn-outline-warning btn-sm">
+                                    <i class="fas fa-eye me-1"></i>Ver Perfil
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-users" style="font-size: 4rem; color: var(--primary-yellow); opacity: 0.5;"></i>
+            <h4 class="text-warning mt-3">Nenhum profissional encontrado</h4>
+            <p class="text-light">
+                No momento não há profissionais cadastrados. Tente novamente mais tarde.
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

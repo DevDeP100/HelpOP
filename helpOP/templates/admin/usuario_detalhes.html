@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalhes do Usuário - HelpOP{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-warning mb-0">
+                    <i class="fas fa-user me-2"></i>Detalhes do Usuário
+                </h2>
+                <a href="{% url 'admin_aprovar_usuarios' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Voltar à Aprovação
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0 text-warning">
+                        <i class="fas fa-id-card me-2"></i>Informações do Usuário
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4 text-warning">Nome</dt>
+                        <dd class="col-sm-8 text-light">{{ usuario.get_full_name|default:usuario.username }}</dd>
+                        <dt class="col-sm-4 text-warning">Email</dt>
+                        <dd class="col-sm-8 text-light">{{ usuario.email|default:"-" }}</dd>
+                        <dt class="col-sm-4 text-warning">Telefone</dt>
+                        <dd class="col-sm-8 text-light">{{ usuario.telefone|default:"-" }}</dd>
+                        <dt class="col-sm-4 text-warning">Tipo</dt>
+                        <dd class="col-sm-8">
+                            {% if usuario.is_oficina %}
+                                <span class="badge bg-warning text-dark">Oficina</span>
+                            {% elif usuario.is_profissional %}
+                                <span class="badge bg-info">Profissional</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Usuário</span>
+                            {% endif %}
+                        </dd>
+                        <dt class="col-sm-4 text-warning">Data de Cadastro</dt>
+                        <dd class="col-sm-8 text-light">{{ usuario.date_joined|date:"d/m/Y H:i" }}</dd>
+                        <dt class="col-sm-4 text-warning">Email Verificado</dt>
+                        <dd class="col-sm-8">
+                            {% if usuario.email_verificado %}
+                                <span class="badge bg-success">Sim</span>
+                            {% else %}
+                                <span class="badge bg-danger">Não</span>
+                            {% endif %}
+                        </dd>
+                        <dt class="col-sm-4 text-warning">Aprovação Pendente</dt>
+                        <dd class="col-sm-8">
+                            {% if usuario.aprovado_pendente %}
+                                <span class="badge bg-warning text-dark">Sim</span>
+                            {% else %}
+                                <span class="badge bg-success">Não</span>
+                            {% endif %}
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+            {% if usuario.aprovado_pendente %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0 text-warning">
+                        <i class="fas fa-check-circle me-2"></i>Aprovar ou Rejeitar
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'admin_aprovar_usuarios' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="user_id" value="{{ usuario.id }}">
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" name="action" value="aprovar" class="btn btn-success">
+                                <i class="fas fa-check me-1"></i>Aprovar
+                            </button>
+                            <button type="submit" name="action" value="rejeitar" class="btn btn-danger"
+                                    onclick="return confirm('Rejeitar e remover este usuário? Esta ação não pode ser desfeita.')">
+                                <i class="fas fa-times me-1"></i>Rejeitar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

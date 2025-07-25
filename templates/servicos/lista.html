@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Serviços - HelpOP{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="text-warning mb-3">
+                <i class="fas fa-cogs me-2"></i>Serviços Disponíveis
+            </h2>
+            <p class="lead">Confira todos os serviços automotivos disponíveis em nossa plataforma.</p>
+        </div>
+    </div>
+
+    {% if servicos %}
+        <div class="row">
+            {% for servico in servicos %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-warning">{{ servico.nome }}</h5>
+                            <p class="card-text">{{ servico.descricao|default:"Descrição não disponível." }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="h5 text-success mb-0">R$ {{ servico.preco_sugerido }}</span>
+                                <span class="badge bg-warning text-dark">Preço Sugerido</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="#" class="btn btn-primary w-100">
+                                <i class="fas fa-search me-2"></i>Encontrar Profissional
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-cogs" style="font-size: 4rem; color: var(--primary-yellow); opacity: 0.5;"></i>
+            <h4 class="mt-3">Nenhum serviço disponível</h4>
+            <p class="text-muted">Em breve teremos uma lista completa de serviços.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

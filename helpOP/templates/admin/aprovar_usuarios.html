@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Aprovar Usuários - HelpOP{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-warning mb-0">
+                    <i class="fas fa-user-check me-2"></i>Aprovar Usuários
+                </h2>
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Voltar ao Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if usuarios_pendentes %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0 text-warning">
+                    <i class="fas fa-clock me-2"></i>Usuários Aguardando Aprovação
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th class="text-warning">Nome</th>
+                                <th class="text-warning">Email</th>
+                                <th class="text-warning">Tipo</th>
+                                <th class="text-warning">Data de Cadastro</th>
+                                <th class="text-warning">Telefone</th>
+                                <th class="text-warning">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for usuario in usuarios_pendentes %}
+                                <tr>
+                                    <td class="text-light">
+                                        <strong>{{ usuario.get_full_name|default:usuario.username }}</strong>
+                                    </td>
+                                    <td class="text-light">{{ usuario.email }}</td>
+                                    <td>
+                                        {% if usuario.is_oficina %}
+                                            <span class="badge bg-warning text-dark">Oficina</span>
+                                        {% elif usuario.is_profissional %}
+                                            <span class="badge bg-info">Profissional</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-light">{{ usuario.date_joined|date:"d/m/Y H:i" }}</td>
+                                    <td class="text-light">{{ usuario.telefone|default:"-" }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <form method="post" style="display: inline;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="user_id" value="{{ usuario.id }}">
+                                                <input type="hidden" name="action" value="aprovar">
+                                                <button type="submit" class="btn btn-success btn-sm me-1" 
+                                                        onclick="return confirm('Aprovar este usuário?')">
+                                                    <i class="fas fa-check me-1"></i>Aprovar
+                                                </button>
+                                            </form>
+                                            <form method="post" style="display: inline;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="user_id" value="{{ usuario.id }}">
+                                                <input type="hidden" name="action" value="rejeitar">
+                                                <button type="submit" class="btn btn-danger btn-sm"
+                                                        onclick="return confirm('Rejeitar e remover este usuário? Esta ação não pode ser desfeita.')">
+                                                    <i class="fas fa-times me-1"></i>Rejeitar
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--primary-yellow); opacity: 0.5;"></i>
+            <h4 class="text-warning mt-3">Nenhum usuário pendente</h4>
+            <p class="text-light mb-4">Todos os usuários foram aprovados ou rejeitados.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ veiculo.marca }} {{ veiculo.modelo }} - HelpOP{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-warning mb-0">
+                    <i class="fas fa-car me-2"></i>{{ veiculo.marca }} {{ veiculo.modelo }}
+                </h2>
+                <div>
+                    <a href="{% url 'editar_veiculo' veiculo.id %}" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-edit me-1"></i>Editar
+                    </a>
+                    {% if user.is_profissional or user.is_oficina %}
+                        <a href="{% url 'nova_manutencao_veiculo' veiculo.id %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>Nova Manutenção
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0 text-warning">
+                        <i class="fas fa-info-circle me-2"></i>Informações do Veículo
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="mb-2"><strong class="text-warning">Marca:</strong></p>
+                            <p class="text-light">{{ veiculo.marca }}</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="mb-2"><strong class="text-warning">Modelo:</strong></p>
+                            <p class="text-light">{{ veiculo.modelo }}</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="mb-2"><strong class="text-warning">Ano:</strong></p>
+                            <p class="text-light">{{ veiculo.ano }}</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="mb-2"><strong class="text-warning">Placa:</strong></p>
+                            <p class="text-light">{{ veiculo.placa }}</p>
+                        </div>
+                        <div class="col-12">
+                            <p class="mb-2"><strong class="text-warning">Quilometragem Atual:</strong></p>
+                            <p class="text-light">{{ veiculo.km_atual }} km</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0 text-warning">
+                        <i class="fas fa-chart-bar me-2"></i>Estatísticas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="stats-card">
+                                <div class="stats-number">{{ manutencoes.count }}</div>
+                                <p class="mb-0">Manutenções</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stats-card">
+                                <div class="stats-number">
+                                    R$ {% if manutencoes %}{{ manutencoes|length|floatformat:2 }}{% else %}0.00{% endif %}
+                                </div>
+                                <p class="mb-0">Total Gasto</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0 text-warning">
+                        <i class="fas fa-tools me-2"></i>Histórico de Manutenções
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if manutencoes %}
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover">
+                                <thead>
+                                    <tr>
+                                        <th class="text-warning">Data</th>
+                                        <th class="text-warning">Serviço</th>
+                                        <th class="text-warning">KM</th>
+                                        <th class="text-warning">Valor</th>
+                                        <th class="text-warning">Profissional</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for manutencao in manutencoes %}
+                                        <tr>
+                                            <td>{{ manutencao.data|date:"d/m/Y" }}</td>
+                                            <td>{{ manutencao.servico.nome|default:"-" }}</td>
+                                            <td>{{ manutencao.km }} km</td>
+                                            <td class="text-warning">R$ {{ manutencao.valor }}</td>
+                                            <td>{{ manutencao.profissional.usuario.get_full_name|default:"-" }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-tools" style="font-size: 3rem; color: var(--primary-yellow); opacity: 0.5;"></i>
+                            <h5 class="text-warning mt-3">Nenhuma manutenção registrada</h5>
+                            <p class="text-light">Este veículo ainda não possui manutenções registradas.</p>
+                            <a href="{% url 'nova_manutencao_veiculo' veiculo.id %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Registrar Primeira Manutenção
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Buscar Profissionais - HelpOP{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="text-warning mb-3">
+                <i class="fas fa-search me-2"></i>Buscar Profissionais
+            </h2>
+            <p class="lead">Encontre profissionais próximos e disponíveis para seu serviço.</p>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="servico" class="form-label">Serviço</label>
+                    <select class="form-control" id="servico" name="servico">
+                        <option value="">Todos os serviços</option>
+                        <option value="mecanica">Mecânica Geral</option>
+                        <option value="eletrica">Elétrica</option>
+                        <option value="funilaria">Funilaria</option>
+                        <option value="pintura">Pintura</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="localizacao" class="form-label">Localização</label>
+                    <input type="text" class="form-control" id="localizacao" name="localizacao" placeholder="Digite sua cidade">
+                </div>
+                <div class="col-md-4">
+                    <label for="avaliacao" class="form-label">Avaliação Mínima</label>
+                    <select class="form-control" id="avaliacao" name="avaliacao">
+                        <option value="">Qualquer avaliação</option>
+                        <option value="4">4+ estrelas</option>
+                        <option value="3">3+ estrelas</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>Buscar
+                    </button>
+                    <a href="{% url 'buscar_profissionais' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>Limpar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Resultados -->
+    {% if profissionais %}
+        <div class="row">
+            {% for profissional in profissionais %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-user-tie" style="font-size: 2rem; color: var(--primary-yellow);"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h5 class="card-title mb-1">{{ profissional.usuario.get_full_name }}</h5>
+                                    <p class="text-muted mb-0">{{ profissional.especialidade }}</p>
+                                </div>
+                            </div>
+                            <p class="card-text">{{ profissional.descricao|default:"Descrição não disponível." }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="text-warning">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                    <small class="text-muted ms-1">(4.0)</small>
+                                </div>
+                                <span class="badge bg-success">Disponível</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-grid gap-2">
+                                <a href="#" class="btn btn-primary">
+                                    <i class="fas fa-phone me-2"></i>Contatar
+                                </a>
+                                <a href="#" class="btn btn-outline-warning">
+                                    <i class="fas fa-eye me-2"></i>Ver Perfil
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-search" style="font-size: 4rem; color: var(--primary-yellow); opacity: 0.5;"></i>
+            <h4 class="mt-3">Nenhum profissional encontrado</h4>
+            <p class="text-muted">Tente ajustar os filtros de busca ou aguarde novos profissionais.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

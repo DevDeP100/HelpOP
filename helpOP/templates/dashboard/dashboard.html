@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - HelpOP{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="text-warning mb-4"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h2>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="stats-card">
+                <i class="fas fa-car feature-icon"></i>
+                <div class="stats-number">{{ veiculos_count }}</div>
+                <p class="mb-0">Veículos cadastrados</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="stats-card">
+                <i class="fas fa-tools feature-icon"></i>
+                <div class="stats-number">{{ manutencoes_count }}</div>
+                <p class="mb-0">Manutenções</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="stats-card">
+                <i class="fas fa-wallet feature-icon"></i>
+                <div class="stats-number">R$ {{ total_gasto }}</div>
+                <p class="mb-0">Total gasto</p>
+            </div>
+        </div>
+    </div>
+    <h4 class="text-warning mt-5 mb-3">Manutenções Recentes</h4>
+    {% if manutencoes_recentes %}
+        <ul class="list-group">
+            {% for manutencao in manutencoes_recentes %}
+                <li class="list-group-item bg-dark text-light">
+                    <strong>{{ manutencao.veiculo.modelo }} ({{ manutencao.veiculo.placa }})</strong> -
+                    {{ manutencao.servico.nome }} em {{ manutencao.data }} -
+                    <span class="text-warning">R$ {{ manutencao.valor }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-warning">Nenhuma manutenção recente encontrada.</p>
+    {% endif %}
+</div>
+{% endblock %} 

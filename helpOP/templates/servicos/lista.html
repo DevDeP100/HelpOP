@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Serviços - HelpOP{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="text-warning mb-4">
+                <i class="fas fa-cogs me-2"></i>Serviços Disponíveis
+            </h2>
+            <p class="text-light mb-4">
+                Conheça todos os serviços automotivos oferecidos pelos nossos profissionais.
+            </p>
+        </div>
+    </div>
+
+    {% if servicos %}
+        <div class="row">
+            {% for servico in servicos %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-tools" style="font-size: 2rem; color: var(--primary-yellow);"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h5 class="card-title text-warning mb-1">{{ servico.nome }}</h5>
+                                    <p class="text-warning mb-0">R$ {{ servico.preco_sugerido }}</p>
+                                </div>
+                            </div>
+                            
+                            {% if servico.descricao %}
+                                <p class="card-text text-light">{{ servico.descricao|truncatewords:25 }}</p>
+                            {% endif %}
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                {% if servico.ativo %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check me-1"></i>Disponível
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary">
+                                        <i class="fas fa-times me-1"></i>Indisponível
+                                    </span>
+                                {% endif %}
+                                <a href="#" class="btn btn-outline-warning btn-sm">
+                                    <i class="fas fa-search me-1"></i>Encontrar Profissional
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-cogs" style="font-size: 4rem; color: var(--primary-yellow); opacity: 0.5;"></i>
+            <h4 class="text-warning mt-3">Nenhum serviço disponível</h4>
+            <p class="text-light">
+                No momento não há serviços cadastrados. Tente novamente mais tarde.
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

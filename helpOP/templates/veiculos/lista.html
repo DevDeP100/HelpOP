@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if user.is_profissional or user.is_oficina %}
+        Veículos dos Clientes - HelpOP
+    {% else %}
+        Meus Veículos - HelpOP
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-warning mb-0">
+                    <i class="fas fa-car me-2"></i>
+                    {% if user.is_profissional or user.is_oficina %}
+                        Veículos dos Clientes
+                    {% else %}
+                        Meus Veículos
+                    {% endif %}
+                </h2>
+                {% if not user.is_profissional and not user.is_oficina %}
+                    <a href="{% url 'adicionar_veiculo' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Adicionar Veículo
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if veiculos %}
+        <div class="row">
+            {% for veiculo in veiculos %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-car" style="font-size: 2rem; color: var(--primary-yellow);"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h5 class="card-title text-warning mb-1">{{ veiculo.marca }} {{ veiculo.modelo }}</h5>
+                                    <p class="text-muted mb-0">{{ veiculo.ano }} - {{ veiculo.placa }}</p>
+                                    {% if user.is_profissional or user.is_oficina %}
+                                        <small class="text-light">
+                                            <i class="fas fa-user me-1"></i>
+                                            {{ veiculo.usuario.get_full_name|default:veiculo.usuario.username }}
+                                        </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <small class="text-light">
+                                    <i class="fas fa-tachometer-alt me-1"></i>
+                                    {{ veiculo.km_atual }} km
+                                </small>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{% url 'veiculo_detalhes' veiculo.id %}" class="btn btn-outline-warning btn-sm">
+                                    <i class="fas fa-eye me-1"></i>Ver Detalhes
+                                </a>
+                                {% if not user.is_profissional and not user.is_oficina %}
+                                    <a href="{% url 'editar_veiculo' veiculo.id %}" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-edit me-1"></i>Editar
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-car" style="font-size: 4rem; color: var(--primary-yellow); opacity: 0.5;"></i>
+            <h4 class="text-warning mt-3">
+                {% if user.is_profissional or user.is_oficina %}
+                    Nenhum veículo encontrado
+                {% else %}
+                    Nenhum veículo cadastrado
+                {% endif %}
+            </h4>
+            <p class="text-light mb-4">
+                {% if user.is_profissional or user.is_oficina %}
+                    Os veículos dos clientes aparecerão aqui quando eles se cadastrarem.
+                {% else %}
+                    Comece adicionando seu primeiro veículo para acompanhar as manutenções.
+                {% endif %}
+            </p>
+            {% if not user.is_profissional and not user.is_oficina %}
+                <a href="{% url 'adicionar_veiculo' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>Adicionar Primeiro Veículo
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

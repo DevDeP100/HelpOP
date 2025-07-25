@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Profissional - HelpOP{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-warning mb-0">
+                    <i class="fas fa-tools me-2"></i>Dashboard Profissional
+                </h2>
+                <div>
+                    <a href="{% url 'profissional_nova_manutencao' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Nova Manutenção
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-tools" style="font-size: 2rem; color: var(--primary-yellow);"></i>
+                    <h3 class="text-warning mt-2">{{ total_manutencoes }}</h3>
+                    <p class="text-light mb-0">Total de Manutenções</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-dollar-sign" style="font-size: 2rem; color: #28a745;"></i>
+                    <h3 class="text-warning mt-2">R$ {{ total_valor|floatformat:2 }}</h3>
+                    <p class="text-light mb-0">Valor Total</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-car" style="font-size: 2rem; color: #17a2b8;"></i>
+                    <h3 class="text-warning mt-2">{{ veiculos_disponiveis.count }}</h3>
+                    <p class="text-light mb-0">Veículos Disponíveis</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Manutenções Recentes -->
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0 text-warning">
+                        <i class="fas fa-history me-2"></i>Manutenções Recentes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if manutencoes_realizadas %}
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover">
+                                <thead>
+                                    <tr>
+                                        <th class="text-warning">Data</th>
+                                        <th class="text-warning">Veículo</th>
+                                        <th class="text-warning">Cliente</th>
+                                        <th class="text-warning">Serviço</th>
+                                        <th class="text-warning">Valor</th>
+                                        <th class="text-warning">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for manutencao in manutencoes_realizadas %}
+                                        <tr>
+                                            <td class="text-light">{{ manutencao.data|date:"d/m/Y" }}</td>
+                                            <td class="text-light">
+                                                <strong>{{ manutencao.veiculo.marca }} {{ manutencao.veiculo.modelo }}</strong><br>
+                                                <small class="text-muted">{{ manutencao.veiculo.placa }}</small>
+                                            </td>
+                                            <td class="text-light">{{ manutencao.veiculo.usuario.get_full_name|default:manutencao.veiculo.usuario.username }}</td>
+                                            <td class="text-light">{{ manutencao.servico.nome|default:"-" }}</td>
+                                            <td class="text-warning">R$ {{ manutencao.valor }}</td>
+                                            <td>
+                                                <a href="{% url 'profissional_editar_manutencao' manutencao.id %}" class="btn btn-outline-warning btn-sm">
+                                                    <i class="fas fa-edit me-1"></i>Editar
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="{% url 'profissional_manutencoes' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-list me-2"></i>Ver Todas as Manutenções
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-tools" style="font-size: 3rem; color: var(--primary-yellow); opacity: 0.5;"></i>
+                            <h5 class="text-warning mt-3">Nenhuma manutenção registrada</h5>
+                            <p class="text-light">Comece registrando suas primeiras manutenções.</p>
+                            <a href="{% url 'profissional_nova_manutencao' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Registrar Primeira Manutenção
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Veículos Disponíveis -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0 text-warning">
+                        <i class="fas fa-car me-2"></i>Veículos Disponíveis
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if veiculos_disponiveis %}
+                        <div class="list-group list-group-flush">
+                            {% for veiculo in veiculos_disponiveis|slice:":5" %}
+                                <div class="list-group-item bg-transparent border-warning">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="text-warning mb-1">{{ veiculo.marca }} {{ veiculo.modelo }}</h6>
+                                            <small class="text-light">{{ veiculo.placa }} - {{ veiculo.usuario.get_full_name|default:veiculo.usuario.username }}</small>
+                                        </div>
+                                        <a href="{% url 'profissional_nova_manutencao' %}?veiculo={{ veiculo.id }}" class="btn btn-outline-warning btn-sm">
+                                            <i class="fas fa-plus me-1"></i>Manutenção
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if veiculos_disponiveis.count > 5 %}
+                            <div class="text-center mt-3">
+                                <small class="text-light">+ {{ veiculos_disponiveis.count|add:"-5" }} veículos disponíveis</small>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-car" style="font-size: 2rem; color: var(--primary-yellow); opacity: 0.5;"></i>
+                            <p class="text-light mt-2">Nenhum veículo disponível</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

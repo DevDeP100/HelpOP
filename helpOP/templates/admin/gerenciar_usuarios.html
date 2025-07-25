@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+
+{% block title %}Gerenciar Usuários - HelpOP{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-warning mb-0">
+                    <i class="fas fa-users-cog me-2"></i>Gerenciar Usuários
+                </h2>
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Voltar ao Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0 text-warning">
+                <i class="fas fa-filter me-2"></i>Filtros
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="busca" class="form-label text-warning">Buscar</label>
+                    <input type="text" class="form-control" id="busca" name="busca" 
+                           value="{{ busca }}" placeholder="Nome, email...">
+                </div>
+                <div class="col-md-3">
+                    <label for="tipo" class="form-label text-warning">Tipo</label>
+                    <select class="form-control" id="tipo" name="tipo">
+                        <option value="">Todos</option>
+                        <option value="usuario" {% if tipo_filtro == 'usuario' %}selected{% endif %}>Usuário</option>
+                        <option value="profissional" {% if tipo_filtro == 'profissional' %}selected{% endif %}>Profissional</option>
+                        <option value="oficina" {% if tipo_filtro == 'oficina' %}selected{% endif %}>Oficina</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label text-warning">Status</label>
+                    <select class="form-control" id="status" name="status">
+                        <option value="">Todos</option>
+                        <option value="aprovado" {% if status_filtro == 'aprovado' %}selected{% endif %}>Aprovado</option>
+                        <option value="pendente" {% if status_filtro == 'pendente' %}selected{% endif %}>Pendente</option>
+                        <option value="email_nao_verificado" {% if status_filtro == 'email_nao_verificado' %}selected{% endif %}>Email não verificado</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search me-1"></i>Filtrar
+                    </button>
+                    <a href="{% url 'admin_gerenciar_usuarios' %}" class="btn btn-outline-warning">
+                        <i class="fas fa-times me-1"></i>Limpar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de Usuários -->
+    {% if usuarios %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0 text-warning">
+                    <i class="fas fa-list me-2"></i>Usuários ({{ usuarios.count }})
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th class="text-warning">Usuário</th>
+                                <th class="text-warning">Email</th>
+                                <th class="text-warning">Tipo</th>
+                                <th class="text-warning">Status</th>
+                                <th class="text-warning">Data Cadastro</th>
+                                <th class="text-warning">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for usuario in usuarios %}
+                                <tr>
+                                    <td class="text-light">
+                                        <strong>{{ usuario.get_full_name|default:usuario.username }}</strong>
+                                        {% if usuario.is_staff %}
+                                            <span class="badge bg-danger ms-1">Admin</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-light">{{ usuario.email|default:"-" }}</td>
+                                    <td>
+                                        {% if usuario.is_oficina %}
+                                            <span class="badge bg-warning text-dark">Oficina</span>
+                                        {% elif usuario.is_profissional %}
+                                            <span class="badge bg-info">Profissional</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Usuário</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if usuario.aprovado_pendente %}
+                                            <span class="badge bg-warning text-dark">Pendente</span>
+                                        {% elif not usuario.email_verificado %}
+                                            <span class="badge bg-danger">Email não verificado</span>
+                                        {% elif not usuario.is_active %}
+                                            <span class="badge bg-secondary">Inativo</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Ativo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-light">{{ usuario.date_joined|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'admin_usuario_detalhes' usuario.id %}" 
+                                               class="btn btn-outline-warning btn-sm me-1">
+                                                <i class="fas fa-eye me-1"></i>Ver
+                                            </a>
+                                            
+                                            <!-- Ações específicas -->
+                                            {% if usuario.aprovado_pendente %}
+                                                <form method="post" style="display: inline;">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="user_id" value="{{ usuario.id }}">
+                                                    <input type="hidden" name="action" value="aprovar">
+                                                    <button type="submit" class="btn btn-success btn-sm me-1"
+                                                            onclick="return confirm('Aprovar este usuário?')">
+                                                        <i class="fas fa-check me-1"></i>Aprovar
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                            
+                                            {% if usuario.is_active %}
+                                                <form method="post" style="display: inline;">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="user_id" value="{{ usuario.id }}">
+                                                    <input type="hidden" name="action" value="desativar">
+                                                    <button type="submit" class="btn btn-warning btn-sm me-1"
+                                                            onclick="return confirm('Desativar este usuário?')">
+                                                        <i class="fas fa-pause me-1"></i>Desativar
+                                                    </button>
+                                                </form>
+                                            {% else %}
+                                                <form method="post" style="display: inline;">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="user_id" value="{{ usuario.id }}">
+                                                    <input type="hidden" name="action" value="ativar">
+                                                    <button type="submit" class="btn btn-success btn-sm me-1">
+                                                        <i class="fas fa-play me-1"></i>Ativar
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                            
+                                            {% if not usuario.is_staff %}
+                                                <form method="post" style="display: inline;">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="user_id" value="{{ usuario.id }}">
+                                                    <input type="hidden" name="action" value="tornar_staff">
+                                                    <button type="submit" class="btn btn-info btn-sm me-1"
+                                                            onclick="return confirm('Tornar este usuário administrador?')">
+                                                        <i class="fas fa-user-shield me-1"></i>Admin
+                                                    </button>
+                                                </form>
+                                            {% else %}
+                                                <form method="post" style="display: inline;">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="user_id" value="{{ usuario.id }}">
+                                                    <input type="hidden" name="action" value="remover_staff">
+                                                    <button type="submit" class="btn btn-secondary btn-sm me-1"
+                                                            onclick="return confirm('Remover privilégios de administrador?')">
+                                                        <i class="fas fa-user me-1"></i>Remover Admin
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                            
+                                            <form method="post" style="display: inline;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="user_id" value="{{ usuario.id }}">
+                                                <input type="hidden" name="action" value="rejeitar">
+                                                <button type="submit" class="btn btn-danger btn-sm"
+                                                        onclick="return confirm('Remover este usuário do sistema? Esta ação não pode ser desfeita.')">
+                                                    <i class="fas fa-trash me-1"></i>Remover
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-users" style="font-size: 4rem; color: var(--primary-yellow); opacity: 0.5;"></i>
+            <h4 class="text-warning mt-3">Nenhum usuário encontrado</h4>
+            <p class="text-light mb-4">Tente ajustar os filtros de busca.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 
