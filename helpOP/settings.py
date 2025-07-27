@@ -33,23 +33,26 @@ DEBUG = env('DEBUG', default=False)
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
 
-# Configuração do banco de dados para Railway
-DATABASES = {
-    'default': env.db(default='sqlite:///' + str(BASE_DIR / 'db.sqlite3')),
-}
+# Configuração do banco de dados para PostgreSQL
+if env('DATABASE_URL', default=None):
+    # Para produção (Railway)
+    DATABASES = {
+        'default': env.db('DATABASE_URL')
+    }
+else:
+    # Para desenvolvimento local
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': env('DB_NAME', default='helpop_db'),
+            'USER': env('DB_USER', default='postgres'),
+            'PASSWORD': env('DB_PASSWORD', default=''),
+            'HOST': env('DB_HOST', default='localhost'),
+            'PORT': env('DB_PORT', default='5432'),
+        }
+    }
 
 # Whitenoise para arquivos estáticos
-MIDDLEWARE = [
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
-
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -64,8 +67,41 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'compressor',  # Django Compressor
+    'corsheaders',  # CORS Headers
     'core',
 ]
+
+MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # CORS middleware
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+# Django Compressor Configuration
+COMPRESS_ENABLED = True
+COMPRESS_OFFLINE = True
+COMPRESS_CSS_FILTERS = [
+    'compressor.filters.css_default.CssAbsoluteFilter',
+    'compressor.filters.cssmin.rCSSMinFilter',
+]
+COMPRESS_JS_FILTERS = [
+    'compressor.filters.jsmin.JSMinFilter',
+]
+
+# CORS Configuration
+CORS_ALLOWED_ORIGINS = [
+    "https://railway.app",
+    "https://*.railway.app",
+]
+
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'helpOP.urls'
 
@@ -140,9 +176,9 @@ LOGOUT_REDIRECT_URL = '/'
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Para desenvolvimento
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # Para produção
-EMAIL_HOST = 'smtp.gmail.com'  # Para Gmail
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'seu-email@gmail.com'  # Substitua pelo seu email
-EMAIL_HOST_PASSWORD = 'sua-senha-de-app'  # Substitua pela sua senha de app
-DEFAULT_FROM_EMAIL = 'HelpOP <noreply@helpop.com.br>' 
+EMAIL_HOST = env('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = env('EMAIL_PORT', default=587)
+EMAIL_USE_TLS = env('EMAIL_USE_TLS', default=True)
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='seu-email@gmail.com')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='sua-senha-de-app')
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='HelpOP <noreply@helpop.com.br>') 

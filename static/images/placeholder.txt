@@ -1,0 +1,13 @@
+Este diretório é destinado para armazenar imagens do projeto HelpOP.
+
+Estrutura sugerida:
+- logo.png - Logo do sistema
+- icons/ - Ícones do sistema
+- vehicles/ - Imagens de veículos
+- profiles/ - Fotos de perfil
+- backgrounds/ - Imagens de fundo
+
+Para adicionar imagens:
+1. Coloque os arquivos de imagem neste diretório
+2. Use o formato: {% load static %} no template
+3. Referencie como: <img src="{% static 'images/nome-da-imagem.jpg' %}" alt="Descrição"> 

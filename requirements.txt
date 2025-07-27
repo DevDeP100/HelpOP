@@ -7,4 +7,18 @@ whitenoise
 python-dotenv
 
 # Dependências adicionais para o projeto
-Pillow 
+Pillow
+django-compressor
+
+# Para otimização de arquivos estáticos
+django-libsass
+
+# Para desenvolvimento e debug
+django-debug-toolbar
+
+# Para segurança
+django-cors-headers
+
+# Para cache
+redis
+django-redis 

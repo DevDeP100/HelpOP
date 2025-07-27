@@ -1,0 +1,221 @@
+/* HelpOP - Estilos Principais */
+
+:root {
+    --primary-yellow: #ffc107;
+    --primary-dark: #212529;
+    --secondary-dark: #343a40;
+    --text-light: #f8f9fa;
+    --text-muted: #6c757d;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+}
+
+/* Reset e estilos base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--primary-dark);
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+/* Container principal */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* Cabeçalho */
+.navbar {
+    background-color: var(--secondary-dark);
+    border-bottom: 3px solid var(--primary-yellow);
+    padding: 1rem 0;
+}
+
+.navbar-brand {
+    color: var(--primary-yellow) !important;
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.navbar-nav .nav-link {
+    color: var(--text-light) !important;
+    transition: color 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    color: var(--primary-yellow) !important;
+}
+
+/* Cards */
+.card {
+    background-color: var(--secondary-dark);
+    border: 1px solid var(--primary-yellow);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.card-header {
+    background-color: var(--primary-dark);
+    border-bottom: 1px solid var(--primary-yellow);
+    color: var(--primary-yellow);
+    font-weight: bold;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Botões */
+.btn-primary {
+    background-color: var(--primary-yellow);
+    border-color: var(--primary-yellow);
+    color: var(--primary-dark);
+    font-weight: bold;
+}
+
+.btn-primary:hover {
+    background-color: #e0a800;
+    border-color: #e0a800;
+    color: var(--primary-dark);
+}
+
+.btn-outline-warning {
+    color: var(--primary-yellow);
+    border-color: var(--primary-yellow);
+}
+
+.btn-outline-warning:hover {
+    background-color: var(--primary-yellow);
+    color: var(--primary-dark);
+}
+
+/* Tabelas */
+.table-dark {
+    background-color: var(--secondary-dark);
+    color: var(--text-light);
+}
+
+.table-dark th {
+    background-color: var(--primary-dark);
+    color: var(--primary-yellow);
+    border-color: var(--primary-yellow);
+}
+
+.table-dark td {
+    border-color: var(--secondary-dark);
+}
+
+/* Formulários */
+.form-control {
+    background-color: var(--secondary-dark);
+    border: 1px solid var(--text-muted);
+    color: var(--text-light);
+}
+
+.form-control:focus {
+    background-color: var(--secondary-dark);
+    border-color: var(--primary-yellow);
+    color: var(--text-light);
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+}
+
+.form-label {
+    color: var(--primary-yellow);
+    font-weight: bold;
+}
+
+/* Alertas */
+.alert-info {
+    background-color: rgba(23, 162, 184, 0.2);
+    border-color: var(--info-color);
+    color: var(--text-light);
+}
+
+.alert-success {
+    background-color: rgba(40, 167, 69, 0.2);
+    border-color: var(--success-color);
+    color: var(--text-light);
+}
+
+.alert-warning {
+    background-color: rgba(255, 193, 7, 0.2);
+    border-color: var(--warning-color);
+    color: var(--text-light);
+}
+
+.alert-danger {
+    background-color: rgba(220, 53, 69, 0.2);
+    border-color: var(--danger-color);
+    color: var(--text-light);
+}
+
+/* Dashboard */
+.stats-card {
+    text-align: center;
+    padding: 2rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.stats-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--primary-yellow);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 10px;
+    }
+    
+    .stats-number {
+        font-size: 2rem;
+    }
+}
+
+/* Animações */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Utilitários */
+.text-warning {
+    color: var(--primary-yellow) !important;
+}
+
+.text-light {
+    color: var(--text-light) !important;
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.bg-transparent {
+    background-color: transparent !important;
+}
+
+.border-warning {
+    border-color: var(--primary-yellow) !important;
+} 

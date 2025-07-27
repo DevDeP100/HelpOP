@@ -14,6 +14,10 @@ class Usuario(AbstractUser):
     email_verificado = models.BooleanField(default=False)
     aprovado_pendente = models.BooleanField(default=False, help_text="Aguardando aprovação do administrador")
     # Outros campos relevantes
+    class Meta:
+        verbose_name = 'Usuário'
+        verbose_name_plural = 'Usuários'
+        db_table = 'usuarios'
 
 class CodigoVerificacao(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
@@ -40,6 +44,13 @@ class CodigoVerificacao(models.Model):
     def valido(self):
         """Verifica se o código é válido e não foi usado"""
         return not self.usado and not self.expirado()
+    
+    class Meta:
+        verbose_name = 'Código de Verificação'
+        verbose_name_plural = 'Códigos de Verificação'
+        db_table = 'codigo_verificacao'
+        ordering = ['-data_criacao']
+        
 
 class Veiculo(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='veiculos')
@@ -51,18 +62,48 @@ class Veiculo(models.Model):
 
     def __str__(self):
         return f"{self.marca} {self.modelo} - {self.placa}"
+    
+    class Meta:
+        verbose_name = 'Veículo'
+        verbose_name_plural = 'Veículos'
+        db_table = 'veiculos'
+        ordering = ['marca', 'modelo', 'placa']
+        
+    
+
+class Oficina(models.Model):
+    nome = models.CharField(max_length=200)
+    endereco = models.TextField()
+    telefone = models.CharField(max_length=20)
+    email = models.EmailField()
+    site = models.URLField(blank=True)
+    cnpj = models.CharField(max_length=18)
+    aprovado = models.BooleanField(default=False)
+    
+    class Meta:
+        verbose_name = 'Oficina'
+        verbose_name_plural = 'Oficinas'
+        db_table = 'oficinas'
+        ordering = ['nome']
+     
 
 class Profissional(models.Model):
     usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='perfil_profissional')
     especialidade = models.CharField(max_length=100)
     descricao = models.TextField(blank=True)
     aprovado = models.BooleanField(default=False)
-    nome_oficina = models.CharField(max_length=200, blank=True, help_text="Nome da oficina (se aplicável)")
+    oficina = models.ForeignKey(Oficina, on_delete=models.CASCADE, related_name='profissionais', null=True, blank=True)
     cnpj = models.CharField(max_length=18, blank=True, help_text="CNPJ da oficina")
     endereco = models.TextField(blank=True, help_text="Endereço da oficina")
 
     def __str__(self):
         return f"{self.nome_oficina} - {self.especialidade}"
+    
+    class Meta:
+        verbose_name = 'Profissional'
+        verbose_name_plural = 'Profissionais'
+        db_table = 'profissionais'
+        ordering = ['oficina', 'especialidade']
     # Outros campos relevantes
 
 class Servico(models.Model):
@@ -73,6 +114,12 @@ class Servico(models.Model):
 
     def __str__(self):
         return f"{self.nome} - {self.preco_sugerido}"
+    
+    class Meta:
+        verbose_name = 'Serviço'
+        verbose_name_plural = 'Serviços'
+        db_table = 'servicos'
+        ordering = ['nome']
     # Outros campos relevantes
 
 class Manutencao(models.Model):
@@ -84,6 +131,12 @@ class Manutencao(models.Model):
     valor = models.DecimalField(max_digits=10, decimal_places=2)
     observacoes = models.TextField(blank=True)
     # Outros campos relevantes
+    
+    class Meta:
+        verbose_name = 'Manutenção'
+        verbose_name_plural = 'Manutenções'
+        db_table = 'manutencoes'
+        ordering = ['veiculo__placa', 'data']
 
     def __str__(self):
         return f"{self.veiculo.placa} - {self.data} - {self.valor}"
@@ -95,5 +148,12 @@ class Avaliacao(models.Model):
     comentario = models.TextField(blank=True)
     data = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        verbose_name = 'Avaliação'
+        verbose_name_plural = 'Avaliações'
+        db_table = 'avaliacoes'
+        ordering = ['profissional__oficina', 'usuario__username', '-data']
+
     def __str__(self):
         return f"{self.profissional.nome_oficina} - {self.usuario.username} - {self.nota}"
+

@@ -1,0 +1,102 @@
+/* HelpOP - Estilos para Impressão */
+
+@media print {
+    /* Esconder elementos desnecessários */
+    .navbar,
+    .sidebar,
+    .btn,
+    .no-print {
+        display: none !important;
+    }
+    
+    /* Configurações de página */
+    @page {
+        margin: 1cm;
+        size: A4;
+    }
+    
+    /* Estilos para impressão */
+    body {
+        background: white !important;
+        color: black !important;
+        font-size: 12pt;
+        line-height: 1.4;
+    }
+    
+    /* Cabeçalho da página */
+    .print-header {
+        text-align: center;
+        border-bottom: 2px solid #000;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .print-header h1 {
+        font-size: 18pt;
+        margin: 0;
+    }
+    
+    /* Tabelas para impressão */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    
+    th, td {
+        border: 1px solid #000;
+        padding: 8px;
+        text-align: left;
+    }
+    
+    th {
+        background-color: #f0f0f0 !important;
+        font-weight: bold;
+    }
+    
+    /* Cards para impressão */
+    .card {
+        border: 1px solid #000;
+        margin-bottom: 15px;
+        page-break-inside: avoid;
+    }
+    
+    .card-header {
+        background-color: #f0f0f0 !important;
+        border-bottom: 1px solid #000;
+        padding: 10px;
+        font-weight: bold;
+    }
+    
+    .card-body {
+        padding: 15px;
+    }
+    
+    /* Quebras de página */
+    .page-break {
+        page-break-before: always;
+    }
+    
+    .avoid-break {
+        page-break-inside: avoid;
+    }
+    
+    /* Informações de rodapé */
+    .print-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 10pt;
+        border-top: 1px solid #000;
+        padding-top: 5px;
+    }
+    
+    /* Data e hora da impressão */
+    .print-date {
+        text-align: right;
+        font-size: 10pt;
+        margin-bottom: 10px;
+    }
+} 
