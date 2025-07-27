@@ -71,4 +71,16 @@ helpOP/
 - Cadastro de profissionais e serviços
 - Avaliação de profissionais
 - Dashboard para profissionais
-- Sistema de aprovação de profissionais 
+- Sistema de aprovação de profissionais
+
+## Resolução de Problemas
+
+### Erro de Módulo não encontrado
+Se aparecer erro de módulo não encontrado, verifique se todas as dependências estão no `requirements.txt`:
+
+```bash
+pip install -r requirements.txt
+```
+
+### Erro de Configuração
+Se houver erro de configuração, verifique se as variáveis de ambiente estão corretas no Railway. 
