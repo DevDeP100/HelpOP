@@ -4,4 +4,7 @@ psycopg2-binary
 gunicorn
 django-environ
 whitenoise
-# ... outras dependências do seu projeto ... 
+
+# Dependências adicionais para o projeto
+Pillow
+python-decouple 

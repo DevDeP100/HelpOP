@@ -1,1 +1,1 @@
-web: gunicorn helpOP.helpOP.wsgi:application 
+web: gunicorn helpOP.wsgi:application 

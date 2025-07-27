@@ -11,28 +11,44 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 import os
+from pathlib import Path
 import environ
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Inicializar django-environ
 env = environ.Env(
     DEBUG=(bool, False)
 )
 
+# Leia o arquivo .env se existir
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-DEBUG = env('DEBUG')
-SECRET_KEY = env('SECRET_KEY')
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = env('SECRET_KEY', default='django-insecure-iniu!(@p@vk^eiabp*ydv*cn&mkei+2mtoqg=31vry24z%z!oy')
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = env('DEBUG', default=False)
+
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
 
 # Configuração do banco de dados para Railway
 DATABASES = {
-    'default': env.db(),
+    'default': env.db(default='sqlite:///' + str(BASE_DIR / 'db.sqlite3')),
 }
 
 # Whitenoise para arquivos estáticos
 MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
-] + MIDDLEWARE
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
@@ -61,7 +77,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'helpOP.helpOP.urls'
+ROOT_URLCONF = 'helpOP.urls'
 
 TEMPLATES = [
     {
@@ -79,7 +95,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'helpOP.helpOP.wsgi.application'
+WSGI_APPLICATION = 'helpOP.wsgi.application'
 
 
 # Password validation
