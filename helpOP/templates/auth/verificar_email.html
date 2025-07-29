@@ -59,7 +59,7 @@
                     <hr class="my-4">
                     
                     <div class="text-center">
-                        <p class="mb-2">Não recebeu o código?</p>
+                        <p class="mb-0">Não recebeu o código?</p>
                         <a href="{% url 'reenviar_codigo' user.id %}" class="btn btn-outline-warning">
                             <i class="fas fa-redo me-2"></i>Reenviar Código
                         </a>
@@ -75,4 +75,11 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Adicionar classe auth-pages ao body
+    document.body.classList.add('auth-pages');
+</script>
 {% endblock %} 

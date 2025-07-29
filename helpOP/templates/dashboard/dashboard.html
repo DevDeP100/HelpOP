@@ -43,4 +43,11 @@
         <p class="text-warning">Nenhuma manutenção recente encontrada.</p>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Adicionar classe auth-pages ao body
+    document.body.classList.add('auth-pages');
+</script>
 {% endblock %} 

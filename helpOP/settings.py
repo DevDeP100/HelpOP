@@ -23,13 +23,13 @@ env = environ.Env(
 )
 
 # Leia o arquivo .env se existir
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'), overwrite=True)
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-iniu!(@p@vk^eiabp*ydv*cn&mkei+2mtoqg=31vry24z%z!oy')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG', default=False)
+DEBUG = True  # Forçar True para desenvolvimento
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', '0.0.0.0', '*'])
 
@@ -178,14 +178,31 @@ LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
+
+# core/email_backend.py
+import ssl
+from django.core.mail.backends.smtp import EmailBackend
+
+class UnsafeTLSBackend(EmailBackend):
+    def open(self):
+        self.ssl_context = ssl._create_unverified_context()
+        return super().open()
+    
+
 # Email Configuration
-if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-else:
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = env('EMAIL_HOST', default='smtp.gmail.com')
-    EMAIL_PORT = env('EMAIL_PORT', default=587)
-    EMAIL_USE_TLS = env('EMAIL_USE_TLS', default=True)
-    EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='daniellnogueira@gmail.com')
-    EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='123333')
-    DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='HelpOP <noreply@helpop.com.br>') 
+EMAIL_BACKEND = 'core.email_backend.UnsafeTLSBackend'
+EMAIL_HOST = env('EMAIL_HOST', default='smtp.hostinger.com')
+EMAIL_PORT = env.int('EMAIL_PORT', default=587)
+EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
+EMAIL_USE_SSL = env.bool('EMAIL_USE_SSL', default=False)
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='noreply@helpop.com.br')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='!@Contato2025')
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='HelpOP <noreply@helpop.com.br>')
+
+# Configurações adicionais para evitar erros
+
+EMAIL_TIMEOUT = 10  # Timeout de 10 segundos
+# Configurações para contornar problemas de certificado
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
+

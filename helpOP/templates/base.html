@@ -249,6 +249,21 @@
             padding-right: 20px;
         }
 
+        main {
+            min-height: calc(100vh - 100px);
+        }
+        
+        /* Padding-top apenas para páginas de autenticação */
+        .auth-pages main {
+            padding-top: 100px; /* Compensar o navbar fixo */
+        }
+        
+        @media (max-width: 991.98px) {
+            .auth-pages main {
+                padding-top: 80px; /* Menor padding em telas menores */
+            }
+        }
+
         /* Responsividade moderna */
         @media (max-width: 1200px) {
             .hero-section {
