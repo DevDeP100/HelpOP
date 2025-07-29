@@ -76,6 +76,7 @@ O projeto está configurado para deploy automático no Railway. Os arquivos nece
 - ✅ `Procfile` - Configuração do servidor
 - ✅ `railway.json` - Configuração do Railway
 - ✅ `wsgi.py` - Aplicação WSGI na raiz
+- ✅ `start.sh` - Script de inicialização
 - ✅ `requirements.txt` - Dependências
 - ✅ `runtime.txt` - Versão do Python
 
@@ -105,7 +106,8 @@ O projeto está configurado para deploy automático no Railway. Os arquivos nece
 
 **Erro: "No module named 'helpOP.helpOP'"**
 - ✅ **Solução**: Use o `wsgi.py` na raiz do projeto
-- ✅ **Procfile**: `web: gunicorn wsgi:application`
+- ✅ **Procfile**: `web: ./start.sh`
+- ✅ **WSGI**: Configurado corretamente
 
 **Erro: "Static files not found"**
 - ✅ **Solução**: Verifique se `collectstatic` foi executado
@@ -119,16 +121,17 @@ O projeto está configurado para deploy automático no Railway. Os arquivos nece
 
 ```
 HelpOP/
-├── wsgi.py              # WSGI na raiz
-├── Procfile             # Configuração do servidor
-├── railway.json         # Configuração do Railway
-├── requirements.txt     # Dependências
-├── runtime.txt          # Versão Python
+├── wsgi.py              # ✅ WSGI na raiz
+├── start.sh             # ✅ Script de inicialização
+├── Procfile             # ✅ Configuração do servidor
+├── railway.json         # ✅ Configuração do Railway
+├── requirements.txt     # ✅ Dependências
+├── runtime.txt          # ✅ Versão Python
 ├── helpOP/
-│   ├── settings.py      # Configurações
-│   ├── urls.py          # URLs
-│   └── wsgi.py          # WSGI original
-└── static/              # Arquivos estáticos
+│   ├── settings.py      # ✅ Configurações otimizadas
+│   ├── urls.py          # ✅ URLs
+│   └── wsgi.py          # ✅ WSGI original
+└── static/              # ✅ Arquivos estáticos
 ```
 
 ## Funcionalidades
