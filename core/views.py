@@ -4,7 +4,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Sum, Count, Q
-from .models import Usuario, Veiculo, Manutencao, Profissional, Servico
+from .models import (
+    Usuario, Veiculo, Manutencao, Profissional, Servico,
+    TipoVeiculo, CategoriaChecklist, ItemChecklist, Checklist, 
+    ItemChecklistPersonalizado, ChecklistExecutado, ItemChecklistExecutado, Arquivos_checklist
+)
 from .forms import UsuarioForm, VeiculoForm, ManutencaoForm
 from .email_utils import enviar_codigo_verificacao, verificar_codigo
 from .decorators import profissional_required, oficina_required
@@ -585,3 +589,295 @@ def profissional_editar_manutencao(request, manutencao_id):
         'form': form,
         'manutencao': manutencao
     })
+
+# Views para o sistema de Checklist
+@login_required
+def checklist_lista(request):
+    """Lista todos os checklists disponíveis"""
+    if request.user.is_oficina:
+        # Oficinas veem seus próprios checklists
+        try:
+            oficina = request.user.oficina
+            if oficina:
+                checklists = Checklist.objects.filter(oficina=oficina)
+            else:
+                checklists = Checklist.objects.none()
+        except:
+            checklists = Checklist.objects.none()
+    elif request.user.is_profissional:
+        # Profissionais veem checklists das oficinas onde trabalham
+        profissional = get_object_or_404(Profissional, usuario=request.user)
+        checklists = Checklist.objects.filter(oficina=profissional.oficina)
+    else:
+        # Usuários normais veem todos os checklists ativos
+        checklists = Checklist.objects.filter(ativo=True)
+    
+    context = {
+        'checklists': checklists,
+        'tipos_veiculos': TipoVeiculo.objects.filter(ativo=True),
+    }
+    return render(request, 'checklist/lista.html', context)
+
+@login_required
+@oficina_required
+def checklist_criar(request):
+    """Criar novo checklist"""
+    if request.method == 'POST':
+        # Lógica para criar checklist
+        nome = request.POST.get('nome')
+        tipo_veiculo_id = request.POST.get('tipo_veiculo')
+        descricao = request.POST.get('descricao', '')
+        
+        if nome and tipo_veiculo_id:
+            tipo_veiculo = get_object_or_404(TipoVeiculo, id=tipo_veiculo_id)
+            
+            # Pegar a oficina diretamente do usuário logado
+            try:
+                oficina = request.user.oficina
+                if not oficina:
+                    messages.error(request, 'Você não possui uma oficina associada. Entre em contato com o administrador.')
+                    return redirect('checklist_lista')
+            except:
+                messages.error(request, 'Você não possui uma oficina associada. Entre em contato com o administrador.')
+                return redirect('checklist_lista')
+            
+            checklist = Checklist.objects.create(
+                oficina=oficina,
+                tipo_veiculo=tipo_veiculo,
+                nome=nome,
+                descricao=descricao,
+                created_by=request.user,
+                updated_by=request.user
+            )
+            
+            messages.success(request, f'Checklist "{nome}" criado com sucesso!')
+            return redirect('checklist_detalhes', checklist_id=checklist.id)
+        else:
+            messages.error(request, 'Por favor, preencha todos os campos obrigatórios.')
+    
+    context = {
+        'tipos_veiculos': TipoVeiculo.objects.filter(ativo=True),
+        'categorias': CategoriaChecklist.objects.filter(ativo=True).order_by('ordem'),
+    }
+    return render(request, 'checklist/criar.html', context)
+
+@login_required
+def checklist_detalhes(request, checklist_id):
+    """Detalhes de um checklist específico"""
+    checklist = get_object_or_404(Checklist, id=checklist_id)
+    
+    # Verificar permissões
+    if not request.user.is_staff:
+        if request.user.is_oficina:
+            try:
+                oficina = request.user.oficina
+                if not oficina or checklist.oficina != oficina:
+                    messages.error(request, 'Você não tem permissão para acessar este checklist.')
+                    return redirect('checklist_lista')
+            except:
+                messages.error(request, 'Você não possui uma oficina associada.')
+                return redirect('checklist_lista')
+        elif request.user.is_profissional:
+            profissional = get_object_or_404(Profissional, usuario=request.user)
+            if checklist.oficina != profissional.oficina:
+                messages.error(request, 'Você não tem permissão para acessar este checklist.')
+                return redirect('checklist_lista')
+    
+    context = {
+        'checklist': checklist,
+        'itens_personalizados': checklist.itens_personalizados.filter(ativo=True).order_by('categoria__ordem', 'ordem'),
+        'execucoes': checklist.checklist_executado.all().order_by('-data_execucao')[:5],
+    }
+    return render(request, 'checklist/detalhes.html', context)
+
+@login_required
+@oficina_required
+def checklist_editar(request, checklist_id):
+    """Editar checklist"""
+    checklist = get_object_or_404(Checklist, id=checklist_id)
+    
+    # Verificar se o usuário tem permissão para editar
+    try:
+        oficina = request.user.oficina
+        if not oficina or checklist.oficina != oficina:
+            messages.error(request, 'Você não tem permissão para editar este checklist.')
+            return redirect('checklist_lista')
+    except:
+        messages.error(request, 'Você não possui uma oficina associada.')
+        return redirect('checklist_lista')
+    
+    if request.method == 'POST':
+        nome = request.POST.get('nome')
+        descricao = request.POST.get('descricao', '')
+        ativo = request.POST.get('ativo') == 'on'
+        
+        if nome:
+            checklist.nome = nome
+            checklist.descricao = descricao
+            checklist.ativo = ativo
+            checklist.updated_by = request.user
+            checklist.save()
+            
+            messages.success(request, 'Checklist atualizado com sucesso!')
+            return redirect('checklist_detalhes', checklist_id=checklist.id)
+        else:
+            messages.error(request, 'Por favor, preencha todos os campos obrigatórios.')
+    
+    context = {
+        'checklist': checklist,
+        'tipos_veiculos': TipoVeiculo.objects.filter(ativo=True),
+    }
+    return render(request, 'checklist/editar.html', context)
+
+@login_required
+def checklist_executar(request, checklist_id):
+    """Executar um checklist"""
+    checklist = get_object_or_404(Checklist, id=checklist_id, ativo=True)
+    
+    # Verificar permissões
+    if not request.user.is_staff:
+        if request.user.is_oficina:
+            try:
+                oficina = request.user.oficina
+                if not oficina or checklist.oficina != oficina:
+                    messages.error(request, 'Você não tem permissão para executar este checklist.')
+                    return redirect('checklist_lista')
+            except:
+                messages.error(request, 'Você não possui uma oficina associada.')
+                return redirect('checklist_lista')
+        elif request.user.is_profissional:
+            profissional = get_object_or_404(Profissional, usuario=request.user)
+            if checklist.oficina != profissional.oficina:
+                messages.error(request, 'Você não tem permissão para executar este checklist.')
+                return redirect('checklist_lista')
+    
+    if request.method == 'POST':
+        # Criar execução do checklist
+        observacoes = request.POST.get('observacoes', '')
+        veiculo_id = request.POST.get('veiculo')
+        
+        if not veiculo_id:
+            messages.error(request, 'Por favor, selecione um veículo.')
+            context = {
+                'checklist': checklist,
+                'itens_personalizados': checklist.itens_personalizados.filter(ativo=True).order_by('categoria__ordem', 'ordem'),
+                'veiculos': Veiculo.objects.all().order_by('marca', 'modelo'),
+            }
+            return render(request, 'checklist/executar.html', context)
+        
+        veiculo = get_object_or_404(Veiculo, id=veiculo_id)
+        
+        checklist_executado = ChecklistExecutado.objects.create(
+            checklist=checklist,
+            veiculo=veiculo,
+            usuario=request.user,
+            observacoes=observacoes
+        )
+        
+        # Criar itens executados baseados nos itens personalizados
+        for item_personalizado in checklist.itens_personalizados.filter(ativo=True):
+            ItemChecklistExecutado.objects.create(
+                checklist_executado=checklist_executado,
+                item_checklist=item_personalizado.item_padrao or item_personalizado,
+                resultado='pendente'
+            )
+        
+        messages.success(request, 'Checklist iniciado com sucesso!')
+        return redirect('checklist_executar_detalhes', checklist_executado_id=checklist_executado.id)
+    
+    context = {
+        'checklist': checklist,
+        'itens_personalizados': checklist.itens_personalizados.filter(ativo=True).order_by('categoria__ordem', 'ordem'),
+        'veiculos': Veiculo.objects.all().order_by('marca', 'modelo'),
+    }
+    return render(request, 'checklist/executar.html', context)
+
+@login_required
+def checklist_executar_detalhes(request, checklist_executado_id):
+    """Detalhes da execução de um checklist"""
+    checklist_executado = get_object_or_404(ChecklistExecutado, id=checklist_executado_id)
+    
+    # Verificar permissões
+    if not request.user.is_staff:
+        if request.user.is_oficina:
+            try:
+                oficina = request.user.oficina
+                if not oficina or checklist_executado.checklist.oficina != oficina:
+                    messages.error(request, 'Você não tem permissão para acessar esta execução.')
+                    return redirect('checklist_lista')
+            except:
+                messages.error(request, 'Você não possui uma oficina associada.')
+                return redirect('checklist_lista')
+        elif request.user.is_profissional:
+            profissional = get_object_or_404(Profissional, usuario=request.user)
+            if checklist_executado.checklist.oficina != profissional.oficina:
+                messages.error(request, 'Você não tem permissão para acessar esta execução.')
+                return redirect('checklist_lista')
+    
+    if request.method == 'POST':
+        # Atualizar itens executados
+        for item_executado in checklist_executado.itens_checklist_executado.all():
+            item_id = str(item_executado.id)
+            checked = request.POST.get(f'checked_{item_id}') == 'on'
+            resultado = request.POST.get(f'resultado_{item_id}', 'pendente')
+            observacoes = request.POST.get(f'observacoes_{item_id}', '')
+            
+            item_executado.checked = checked
+            item_executado.resultado = resultado
+            item_executado.observacoes = observacoes
+            item_executado.save()
+        
+        # Atualizar status do checklist
+        status = request.POST.get('status', 'pendente')
+        observacoes_gerais = request.POST.get('observacoes_gerais', '')
+        
+        checklist_executado.status = status
+        checklist_executado.observacoes = observacoes_gerais
+        checklist_executado.save()
+        
+        messages.success(request, 'Checklist atualizado com sucesso!')
+        return redirect('checklist_executar_detalhes', checklist_executado_id=checklist_executado.id)
+    
+    context = {
+        'checklist_executado': checklist_executado,
+        'itens_executados': checklist_executado.itens_checklist_executado.all().order_by('item_checklist__categoria__ordem', 'item_checklist__ordem'),
+    }
+    return render(request, 'checklist/executar_detalhes.html', context)
+
+@login_required
+def checklist_relatorios(request):
+    """Relatórios de checklists"""
+    if request.user.is_oficina:
+        try:
+            oficina = request.user.oficina
+            if oficina:
+                checklists = Checklist.objects.filter(oficina=oficina)
+                executados = ChecklistExecutado.objects.filter(checklist__oficina=oficina)
+            else:
+                checklists = Checklist.objects.none()
+                executados = ChecklistExecutado.objects.none()
+        except:
+            checklists = Checklist.objects.none()
+            executados = ChecklistExecutado.objects.none()
+    elif request.user.is_profissional:
+        profissional = get_object_or_404(Profissional, usuario=request.user)
+        checklists = Checklist.objects.filter(oficina=profissional.oficina)
+        executados = ChecklistExecutado.objects.filter(checklist__oficina=profissional.oficina)
+    else:
+        checklists = Checklist.objects.filter(ativo=True)
+        executados = ChecklistExecutado.objects.all()
+    
+    # Estatísticas
+    total_checklists = checklists.count()
+    total_executados = executados.count()
+    executados_hoje = executados.filter(data_execucao__date=timezone.now().date()).count()
+    pendentes = executados.filter(status='pendente').count()
+    
+    context = {
+        'total_checklists': total_checklists,
+        'total_executados': total_executados,
+        'executados_hoje': executados_hoje,
+        'pendentes': pendentes,
+        'executados_recentes': executados.order_by('-data_execucao')[:10],
+    }
+    return render(request, 'checklist/relatorios.html', context)

@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}Criar Checklist - HelpOP{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-warning mb-0">
+                    <i class="fas fa-plus me-2"></i>Criar Novo Checklist
+                </h2>
+                <a href="{% url 'checklist_lista' %}" class="btn btn-outline-warning">
+                    <i class="fas fa-arrow-left me-2"></i>Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0 text-warning">
+                        <i class="fas fa-clipboard-check me-2"></i>Informações do Checklist
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="nome" class="form-label text-warning">Nome do Checklist *</label>
+                            <input type="text" class="form-control" id="nome" name="nome" required 
+                                   placeholder="Ex: Checklist Preventiva Carros">
+                            <div class="form-text text-light">Nome descritivo para identificar o checklist</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="tipo_veiculo" class="form-label text-warning">Tipo de Veículo *</label>
+                            <select class="form-control" id="tipo_veiculo" name="tipo_veiculo" required>
+                                <option value="">Selecione um tipo de veículo</option>
+                                {% for tipo in tipos_veiculos %}
+                                    <option value="{{ tipo.id }}">{{ tipo.nome }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text text-light">Tipo de veículo para o qual este checklist será aplicado</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label text-warning">Descrição</label>
+                            <textarea class="form-control" id="descricao" name="descricao" rows="3" 
+                                      placeholder="Descrição detalhada do checklist..."></textarea>
+                            <div class="form-text text-light">Descrição opcional do checklist</div>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Criar Checklist
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0 text-warning">
+                        <i class="fas fa-info-circle me-2"></i>Informações
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-warning">Tipos de Veículos Disponíveis:</h6>
+                        <ul class="list-unstyled">
+                            {% for tipo in tipos_veiculos %}
+                                <li><i class="fas fa-car me-2"></i>{{ tipo.nome }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-warning">Categorias Padrão:</h6>
+                        <ul class="list-unstyled">
+                            {% for categoria in categorias %}
+                                <li><i class="fas fa-tools me-2"></i>{{ categoria.nome }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        <strong>Dica:</strong> Após criar o checklist, você poderá adicionar itens personalizados baseados nos itens padrão do sistema.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Adicionar classe auth-pages ao body
+    document.body.classList.add('auth-pages');
+</script>
+{% endblock %} 

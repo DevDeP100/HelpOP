@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+
+{% block title %}Executar Checklist - HelpOP{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-warning mb-0">
+                    <i class="fas fa-clipboard-check me-2"></i>Executando Checklist
+                </h2>
+                <div>
+                    <button type="submit" form="checklist-form" class="btn btn-success me-2">
+                        <i class="fas fa-save me-2"></i>Salvar Progresso
+                    </button>
+                    <a href="{% url 'checklist_detalhes' checklist_executado.checklist.id %}" class="btn btn-outline-warning">
+                        <i class="fas fa-arrow-left me-2"></i>Voltar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" id="checklist-form">
+        {% csrf_token %}
+        
+        <div class="row">
+            <!-- Informações da Execução -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0 text-warning">
+                            <i class="fas fa-info-circle me-2"></i>Informações da Execução
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <strong class="text-warning">Checklist:</strong><br>
+                            <span class="text-light">{{ checklist_executado.checklist.nome }}</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong class="text-warning">Veículo:</strong><br>
+                            {% if checklist_executado.veiculo %}
+                                <span class="text-light">{{ checklist_executado.veiculo.marca }} {{ checklist_executado.veiculo.modelo }} ({{ checklist_executado.veiculo.placa }})</span>
+                            {% else %}
+                                <span class="text-muted">Não especificado</span>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <strong class="text-warning">Proprietário:</strong><br>
+                            {% if checklist_executado.veiculo %}
+                                <span class="text-light">{{ checklist_executado.veiculo.usuario.get_full_name|default:checklist_executado.veiculo.usuario.username }}</span>
+                            {% else %}
+                                <span class="text-muted">Não especificado</span>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <strong class="text-warning">Oficina:</strong><br>
+                            <span class="text-light">{{ checklist_executado.checklist.oficina.nome }}</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong class="text-warning">Tipo de Veículo:</strong><br>
+                            <span class="text-light">{{ checklist_executado.checklist.tipo_veiculo.nome }}</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong class="text-warning">Iniciado em:</strong><br>
+                            <span class="text-light">{{ checklist_executado.data_execucao|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong class="text-warning">Executado por:</strong><br>
+                            <span class="text-light">{{ checklist_executado.usuario.get_full_name|default:checklist_executado.usuario.username }}</span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="status" class="form-label text-warning">Status da Execução</label>
+                            <select class="form-control" id="status" name="status">
+                                <option value="pendente" {% if checklist_executado.status == 'pendente' %}selected{% endif %}>Pendente</option>
+                                <option value="executado" {% if checklist_executado.status == 'executado' %}selected{% endif %}>Executado</option>
+                                <option value="cancelado" {% if checklist_executado.status == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="observacoes_gerais" class="form-label text-warning">Observações Gerais</label>
+                            <textarea class="form-control" id="observacoes_gerais" name="observacoes_gerais" rows="3">{{ checklist_executado.observacoes }}</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Itens do Checklist -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0 text-warning">
+                            <i class="fas fa-list me-2"></i>Itens do Checklist ({{ itens_executados.count }})
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% regroup itens_executados by item_checklist.categoria as categorias_list %}
+                        {% for categoria in categorias_list %}
+                            <div class="mb-4">
+                                <h6 class="text-warning border-bottom pb-2">
+                                    <i class="fas fa-tools me-2"></i>{{ categoria.grouper.nome }}
+                                </h6>
+                                
+                                {% for item_executado in categoria.list %}
+                                    <div class="card mb-3 border-warning">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <h6 class="text-light mb-2">{{ item_executado.item_checklist.nome }}</h6>
+                                                    {% if item_executado.item_checklist.descricao %}
+                                                        <p class="text-muted small mb-2">{{ item_executado.item_checklist.descricao }}</p>
+                                                    {% endif %}
+                                                    
+                                                    <div class="mb-3">
+                                                        <span class="badge bg-info me-2">{{ item_executado.item_checklist.get_tipo_verificacao_display }}</span>
+                                                        {% if item_executado.item_checklist.critico %}
+                                                            <span class="badge bg-danger me-2">Crítico</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-md-4">
+                                                    <div class="mb-3">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" 
+                                                                   id="checked_{{ item_executado.id }}" 
+                                                                   name="checked_{{ item_executado.id }}"
+                                                                   {% if item_executado.checked %}checked{% endif %}>
+                                                            <label class="form-check-label text-warning" for="checked_{{ item_executado.id }}">
+                                                                Verificado
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="mb-3">
+                                                        <label for="resultado_{{ item_executado.id }}" class="form-label text-warning">Resultado</label>
+                                                        <select class="form-control" id="resultado_{{ item_executado.id }}" name="resultado_{{ item_executado.id }}">
+                                                            <option value="pendente" {% if item_executado.resultado == 'pendente' %}selected{% endif %}>Pendente</option>
+                                                            <option value="aprovado" {% if item_executado.resultado == 'aprovado' %}selected{% endif %}>Aprovado</option>
+                                                            <option value="reprovado" {% if item_executado.resultado == 'reprovado' %}selected{% endif %}>Reprovado</option>
+                                                            <option value="nao_aplicavel" {% if item_executado.resultado == 'nao_aplicavel' %}selected{% endif %}>Não Aplicável</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row">
+                                                <div class="col-12">
+                                                    <label for="observacoes_{{ item_executado.id }}" class="form-label text-warning">Observações</label>
+                                                    <textarea class="form-control" id="observacoes_{{ item_executado.id }}" 
+                                                              name="observacoes_{{ item_executado.id }}" rows="2">{{ item_executado.observacoes }}</textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Adicionar classe auth-pages ao body
+    document.body.classList.add('auth-pages');
+    
+    // Auto-save progresso
+    let autoSaveTimer;
+    const form = document.getElementById('checklist-form');
+    
+    form.addEventListener('change', function() {
+        clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(function() {
+            // Aqui você pode implementar auto-save se necessário
+            console.log('Progresso alterado - auto-save disponível');
+        }, 2000);
+    });
+</script>
+{% endblock %} 
