@@ -67,47 +67,68 @@ Para testar a conexão com o banco:
 python test_db.py
 ```
 
-## Deploy no Railway
+## 🚀 Deploy no Railway
 
-### 1. Preparação
-- Certifique-se de que o código está no GitHub
-- O Railway detecta automaticamente o `Procfile` e `requirements.txt`
+### Configuração Automática
 
-### 2. Variáveis de Ambiente no Railway
-Configure estas variáveis no painel do Railway:
+O projeto está configurado para deploy automático no Railway. Os arquivos necessários já estão presentes:
+
+- ✅ `Procfile` - Configuração do servidor
+- ✅ `railway.json` - Configuração do Railway
+- ✅ `wsgi.py` - Aplicação WSGI na raiz
+- ✅ `requirements.txt` - Dependências
+- ✅ `runtime.txt` - Versão do Python
+
+### Passos para Deploy:
+
+1. **Conectar ao Railway:**
+   ```bash
+   # Via CLI do Railway
+   railway login
+   railway init
+   railway up
+   ```
+
+2. **Configurar Variáveis de Ambiente:**
+   - `DEBUG=False`
+   - `SECRET_KEY=sua-chave-secreta`
+   - `DATABASE_URL` (fornecido pelo Railway)
+   - `ALLOWED_HOSTS=*.railway.app`
+
+3. **Verificar Deploy:**
+   - O Railway executará automaticamente:
+     - `python manage.py collectstatic --noinput`
+     - `python manage.py migrate`
+     - `gunicorn wsgi:application`
+
+### Solução de Problemas
+
+**Erro: "No module named 'helpOP.helpOP'"**
+- ✅ **Solução**: Use o `wsgi.py` na raiz do projeto
+- ✅ **Procfile**: `web: gunicorn wsgi:application`
+
+**Erro: "Static files not found"**
+- ✅ **Solução**: Verifique se `collectstatic` foi executado
+- ✅ **Configuração**: `STATICFILES_STORAGE` configurado para produção
+
+**Erro: "Database connection failed"**
+- ✅ **Solução**: Configure `DATABASE_URL` no Railway
+- ✅ **Verificação**: Teste a conexão com PostgreSQL
+
+### Estrutura de Arquivos para Deploy:
 
 ```
-DEBUG=False
-SECRET_KEY=sua-secret-key-aqui
-ALLOWED_HOSTS=railway.app,localhost,127.0.0.1,*.railway.app
-DATABASE_URL=postgres://usuario:senha@host:5432/nome_do_banco
-```
-
-**Importante:** A `DATABASE_URL` deve ser fornecida pelo Railway automaticamente quando você adiciona um banco PostgreSQL ao projeto.
-
-### 3. Comandos de Deploy
-Após o deploy inicial, execute no terminal do Railway:
-
-```bash
-python manage.py migrate
-python manage.py collectstatic --noinput
-python manage.py compress --force
-```
-
-### 4. Estrutura do Projeto
-```
-helpOP/
+HelpOP/
+├── wsgi.py              # WSGI na raiz
+├── Procfile             # Configuração do servidor
+├── railway.json         # Configuração do Railway
+├── requirements.txt     # Dependências
+├── runtime.txt          # Versão Python
 ├── helpOP/
-│   ├── settings.py
-│   ├── urls.py
-│   └── wsgi.py
-├── core/
-├── templates/
-├── static/
-├── requirements.txt
-├── Procfile
-├── runtime.txt
-└── test_db.py
+│   ├── settings.py      # Configurações
+│   ├── urls.py          # URLs
+│   └── wsgi.py          # WSGI original
+└── static/              # Arquivos estáticos
 ```
 
 ## Funcionalidades
