@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Exemplos de Logo - HelpOP{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-warning mb-5">Exemplos de Logo HelpOP</h1>
+        </div>
+    </div>
+    
+    <!-- Logo Grande -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h3 class="text-warning mb-3">Logo Grande</h3>
+            <div class="logo-circular logo-circular-large mx-auto">
+                <img src="{% static 'images/logo.svg' %}" alt="HelpOP Logo" class="logo-image">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Logo Médio -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h3 class="text-warning mb-3">Logo Médio</h3>
+            <div class="logo-circular logo-circular-medium mx-auto">
+                <img src="{% static 'images/logo.svg' %}" alt="HelpOP Logo" class="logo-image">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Logo Pequeno -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h3 class="text-warning mb-3">Logo Pequeno</h3>
+            <div class="logo-circular logo-circular-small mx-auto">
+                <img src="{% static 'images/logo.svg' %}" alt="HelpOP Logo" class="logo-image">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Logo Muito Pequeno -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h3 class="text-warning mb-3">Logo Muito Pequeno</h3>
+            <div class="logo-circular logo-circular-xs mx-auto">
+                <img src="{% static 'images/logo.svg' %}" alt="HelpOP Logo" class="logo-image">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Logo Extra Pequeno -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h3 class="text-warning mb-3">Logo Extra Pequeno</h3>
+            <div class="logo-circular logo-circular-xxs mx-auto">
+                <img src="{% static 'images/logo.svg' %}" alt="HelpOP Logo" class="logo-image">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Código HTML -->
+    <div class="row">
+        <div class="col-12">
+            <h3 class="text-warning mb-3">Código HTML</h3>
+            <div class="card">
+                <div class="card-body">
+                    <h5>Logo Grande:</h5>
+                    <pre><code>&lt;div class="logo-circular logo-circular-large mx-auto"&gt;
+    &lt;img src="{% static 'images/logo.svg' %}" alt="HelpOP Logo" class="logo-image"&gt;
+&lt;/div&gt;</code></pre>
+                    
+                    <h5>Logo Médio:</h5>
+                    <pre><code>&lt;div class="logo-circular logo-circular-medium mx-auto"&gt;
+    &lt;img src="{% static 'images/logo.svg' %}" alt="HelpOP Logo" class="logo-image"&gt;
+&lt;/div&gt;</code></pre>
+                    
+                    <h5>Logo Pequeno:</h5>
+                    <pre><code>&lt;div class="logo-circular logo-circular-small mx-auto"&gt;
+    &lt;img src="{% static 'images/logo.svg' %}" alt="HelpOP Logo" class="logo-image"&gt;
+&lt;/div&gt;</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -29,9 +29,9 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-iniu!(@p@vk^eiabp*ydv*cn&mkei+2mtoqg=31vry24z%z!oy')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG', default=False)
+DEBUG = True  # Forçar DEBUG como True para desenvolvimento
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', '0.0.0.0', '*'])
 
 CSRF_TRUSTED_ORIGINS = env.list('DJANGO_CSRF_TRUSTED_ORIGINS', default=['https://*.railway.app', 'http://localhost:8000', 'http://127.0.0.1:8000'])
 
@@ -54,11 +54,13 @@ else:
         }
     }
 
-# Whitenoise para arquivos estáticos
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# Configuração de arquivos estáticos - Simplificada
 STATIC_URL = '/static/'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 # Application definition
 
@@ -76,8 +78,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # CORS middleware
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    # 'whitenoise.middleware.WhiteNoiseMiddleware',  # Removido para desenvolvimento
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -161,10 +163,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-]
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
@@ -177,10 +175,10 @@ LOGOUT_REDIRECT_URL = '/'
 
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Para desenvolvimento
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # Para produção
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # Para produção
 EMAIL_HOST = env('EMAIL_HOST', default='smtp.gmail.com')
 EMAIL_PORT = env('EMAIL_PORT', default=587)
 EMAIL_USE_TLS = env('EMAIL_USE_TLS', default=True)
-EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='seu-email@gmail.com')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='sua-senha-de-app')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='daniellnogueira@gmail.com')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='123333')
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='HelpOP <noreply@helpop.com.br>') 

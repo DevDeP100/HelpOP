@@ -1,0 +1,128 @@
+/* HelpOP - Estilos do Logo SVG */
+
+:root {
+    --primary-black: #1a1a1a;
+    --secondary-black: #2d2d2d;
+    --primary-yellow: #ffd700;
+    --secondary-yellow: #ffed4e;
+    --accent-yellow: #fff200;
+    --text-light: #ffffff;
+    --text-dark: #1a1a1a;
+}
+
+/* Logo Circular - Baseado na imagem SVG */
+.logo-circular {
+    width: 280px; /* Aumentado de 180px para 280px para acomodar o círculo maior */
+    height: 280px; /* Aumentado de 180px para 280px para acomodar o círculo maior */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+    margin: 0 auto; /* Centralizar horizontalmente */
+    text-align: center; /* Centralizar conteúdo */
+    left: 50%; /* Centralização adicional */
+    transform: translateX(-50%); /* Centralização adicional */
+    overflow: visible !important; /* Permitir que o conteúdo seja visível fora do container */
+    max-width: none !important; /* Remover limitação de largura máxima */
+    max-height: none !important; /* Remover limitação de altura máxima */
+}
+
+/* Classe específica para centralização perfeita */
+.logo-circular.mx-auto {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    overflow: visible !important;
+    max-width: none !important;
+    max-height: none !important;
+}
+
+.logo-circular:hover {
+    transform: translateX(-50%) scale(1.05); /* Manter centralização no hover */
+}
+
+/* Imagem do logo SVG */
+.logo-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    max-width: none !important; /* Remover limitação de largura máxima */
+    height: auto;
+    margin: 0 auto; /* Centralizar a imagem */
+    text-align: center; /* Centralizar conteúdo */
+    overflow: visible !important; /* Permitir que a imagem seja visível fora do container */
+}
+
+/* Variações do logo */
+.logo-circular-small {
+    width: 78px; /* Aumentado de 65px para 78px (20% maior) */
+    height: 78px; /* Aumentado de 65px para 78px (20% maior) */
+}
+
+.logo-circular-medium {
+    width: 156px; /* Aumentado de 130px para 156px (20% maior) */
+    height: 156px; /* Aumentado de 130px para 156px (20% maior) */
+}
+
+.logo-circular-large {
+    width: 312px; /* Aumentado de 260px para 312px (20% maior) */
+    height: 312px; /* Aumentado de 260px para 312px (20% maior) */
+}
+
+.logo-circular-xs {
+    width: 62px; /* Aumentado de 52px para 62px (20% maior) */
+    height: 62px; /* Aumentado de 52px para 62px (20% maior) */
+}
+
+.logo-circular-xxs {
+    width: 47px; /* Aumentado de 39px para 47px (20% maior) */
+    height: 47px; /* Aumentado de 39px para 47px (20% maior) */
+}
+
+/* Animações */
+.logo-circular-pulse {
+    animation: logoPulse 2s infinite;
+}
+
+@keyframes logoPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.logo-circular-rotate {
+    animation: logoRotate 3s linear infinite;
+}
+
+@keyframes logoRotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .logo-circular {
+        width: 218px; /* Aumentado de 182px para 218px (20% maior) */
+        height: 218px; /* Aumentado de 182px para 218px (20% maior) */
+    }
+    
+    .logo-circular-small {
+        width: 71px; /* Aumentado de 59px para 71px (20% maior) */
+        height: 71px; /* Aumentado de 59px para 71px (20% maior) */
+    }
+}
+
+@media (max-width: 576px) {
+    .logo-circular {
+        width: 187px; /* Aumentado de 156px para 187px (20% maior) */
+        height: 187px; /* Aumentado de 156px para 187px (20% maior) */
+    }
+    
+    .logo-circular-small {
+        width: 62px; /* Aumentado de 52px para 62px (20% maior) */
+        height: 62px; /* Aumentado de 52px para 62px (20% maior) */
+    }
+} 
