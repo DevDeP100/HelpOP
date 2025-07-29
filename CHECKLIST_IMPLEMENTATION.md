@@ -97,6 +97,14 @@ path('checklist/relatorios/', views.checklist_relatorios, name='checklist_relato
 - ✅ **Teste de API** diretamente na interface
 - ✅ **Schemas automáticos** gerados dos serializers
 
+#### **Dependências Atualizadas:**
+- ✅ **requirements.txt atualizado** com todas as dependências
+- ✅ **Django REST Framework** incluído
+- ✅ **drf-yasg** para documentação Swagger
+- ✅ **Todas as dependências** organizadas e documentadas
+- ✅ **Documentação DEPENDENCIES.md** criada
+- ✅ **Versões compatíveis** testadas e validadas
+
 ### **🔐 Sistema de Permissões:**
 
 - **Oficinas:** Podem criar, editar e gerenciar seus próprios checklists
