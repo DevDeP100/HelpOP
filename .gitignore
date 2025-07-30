@@ -65,6 +65,8 @@ venv/
 .env
 .env.*
 
+*.md
+
 # Coverage reports
 htmlcov/
 .coverage

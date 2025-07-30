@@ -7,6 +7,7 @@ from .api_views import (
     ChecklistViewSet, ItemChecklistPersonalizadoViewSet, ChecklistExecutadoViewSet,
     ItemChecklistExecutadoViewSet, ArquivosChecklistViewSet
 )
+from .auth_views import api_login, api_logout
 
 # Criar router
 router = DefaultRouter()
@@ -34,4 +35,6 @@ router.register(r'arquivos-checklist', ArquivosChecklistViewSet, basename='arqui
 urlpatterns = [
     path('', include(router.urls)),
     path('auth/', include('rest_framework.urls')),
+    path('login/', api_login, name='api_login'),
+    path('logout/', api_logout, name='api_logout'),
 ] 
