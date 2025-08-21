@@ -59,6 +59,10 @@ class Veiculo(models.Model):
     ano = models.IntegerField()
     placa = models.CharField(max_length=10)
     km_atual = models.PositiveIntegerField(default=0)
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    data_atualizacao = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='veiculos_criado')
+    updated_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='veiculos_atualizado')
 
     def __str__(self):
         return f"{self.marca} {self.modelo} - {self.placa}"
@@ -80,6 +84,10 @@ class Oficina(models.Model):
     site = models.URLField(blank=True)
     cnpj = models.CharField(max_length=18)
     aprovado = models.BooleanField(default=False)
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    data_atualizacao = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='oficinas_criado')
+    updated_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='oficinas_atualizado')
     
     class Meta:
         verbose_name = 'Oficina'
@@ -96,9 +104,13 @@ class Profissional(models.Model):
     oficina = models.ForeignKey(Oficina, on_delete=models.CASCADE, related_name='profissionais', null=True, blank=True)
     cnpj = models.CharField(max_length=18, blank=True, help_text="CNPJ da oficina")
     endereco = models.TextField(blank=True, help_text="Endereço da oficina")
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    data_atualizacao = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='profissionais_criado')
+    updated_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='profissionais_atualizado')
 
     def __str__(self):
-        return f"{self.nome_oficina} - {self.especialidade}"
+        return f"{self.oficina.nome if self.oficina else self.usuario.username} - {self.especialidade}"
     
     class Meta:
         verbose_name = 'Profissional'
@@ -112,6 +124,10 @@ class Servico(models.Model):
     descricao = models.TextField(blank=True)
     preco_sugerido = models.DecimalField(max_digits=10, decimal_places=2)
     ativo = models.BooleanField(default=True)
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    data_atualizacao = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='servicos_criado')
+    updated_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='servicos_atualizado')
 
     def __str__(self):
         return f"{self.nome} - {self.preco_sugerido}"
@@ -131,6 +147,10 @@ class Manutencao(models.Model):
     km = models.PositiveIntegerField()
     valor = models.DecimalField(max_digits=10, decimal_places=2)
     observacoes = models.TextField(blank=True)
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    data_atualizacao = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='manutencoes_criado')
+    updated_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='manutencoes_atualizado')
     # Outros campos relevantes
     
     class Meta:
@@ -166,6 +186,9 @@ class TipoVeiculo(models.Model):
     ativo = models.BooleanField(default=True)
     data_criacao = models.DateTimeField(auto_now_add=True)
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='tipos_veiculos')
+    data_atualizacao = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='created_by_tipos_veiculos')
+    updated_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='updated_by_tipos_veiculos')
     
     def __str__(self):
         return self.nome
@@ -184,6 +207,9 @@ class CategoriaChecklist(models.Model):
     ativo = models.BooleanField(default=True)
     data_criacao = models.DateTimeField(auto_now_add=True)
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='categorias_checklist')
+    data_atualizacao = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='categorias_checklist_criado')
+    updated_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='categorias_checklist_atualizado')
     def __str__(self):
         return self.nome
     
@@ -214,6 +240,9 @@ class ItemChecklist(models.Model):
     data_criacao = models.DateTimeField(auto_now_add=True)
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='itens_checklist')
     obrigatorio = models.BooleanField(default=True, help_text="Item obrigatório no checklist")
+    data_atualizacao = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='itens_checklist_criado')
+    updated_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='itens_checklist_atualizado')
 
     def __str__(self):
         return f"{self.categoria.nome} - {self.nome}"
@@ -251,24 +280,15 @@ class ItemChecklistPersonalizado(models.Model):
     checklist = models.ForeignKey(Checklist, on_delete=models.CASCADE, related_name='itens_personalizados')
     item_padrao = models.ForeignKey(ItemChecklist, on_delete=models.CASCADE, null=True, blank=True, 
                                    help_text="Item padrão do sistema (opcional)")
-    nome = models.CharField(max_length=200)
-    descricao = models.TextField(blank=True)
-    categoria = models.ForeignKey(CategoriaChecklist, on_delete=models.CASCADE)
-    tipo_verificacao = models.CharField(
-        max_length=20,
-        choices=[
-            ('visual', 'Verificação Visual'),
-            ('teste', 'Teste Funcional'),
-            ('medicao', 'Medição'),
-            ('inspecao', 'Inspeção Detalhada'),
-        ],
-        default='visual'
-    )
+
     critico = models.BooleanField(default=False)
     obrigatorio = models.BooleanField(default=True, help_text="Item obrigatório no checklist")
     ordem = models.PositiveIntegerField(default=0)
     ativo = models.BooleanField(default=True)
     data_criacao = models.DateTimeField(auto_now_add=True)
+    data_atualizacao = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='itens_checklist_personalizados_criado')
+    updated_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='itens_checklist_personalizados_atualizado')
     
     def __str__(self):
         return f"{self.checklist.nome} - {self.nome}"
@@ -277,7 +297,7 @@ class ItemChecklistPersonalizado(models.Model):
         verbose_name = 'Item Personalizado do Checklist'
         verbose_name_plural = 'Itens Personalizados do Checklist'
         db_table = 'itens_checklist_personalizados'
-        ordering = ['checklist', 'categoria__ordem', 'ordem', 'nome']
+        ordering = ['checklist', 'ordem']
 
 
 class ChecklistExecutado(models.Model):
@@ -289,6 +309,10 @@ class ChecklistExecutado(models.Model):
     observacoes = models.TextField(blank=True)
     data_atualizacao = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=200, choices=[('pendente', 'Pendente'), ('executado', 'Executado'), ('cancelado', 'Cancelado')], default='pendente')
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    data_atualizacao = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='checklist_executado_criado')
+    updated_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='checklist_executado_atualizado')
 
     class Meta:
         verbose_name = 'Checklist Executado'
@@ -302,12 +326,15 @@ class ChecklistExecutado(models.Model):
     
 
 class ItemChecklistExecutado(models.Model):
-    checklist_executado = models.ForeignKey(ChecklistExecutado, on_delete=models.CASCADE, related_name='itens_checklist_executado')
-    item_checklist = models.ForeignKey(ItemChecklist, on_delete=models.CASCADE, related_name='itens_checklist_executado')
+    checklist_executado = models.ForeignKey(ChecklistExecutado, on_delete=models.CASCADE, related_name='checklist_executado')
+    item_checklist = models.ForeignKey(ItemChecklistPersonalizado, on_delete=models.CASCADE, related_name='itens_checklist_personalizados')
     checked = models.BooleanField(default=False)
     resultado = models.CharField(max_length=200)
     observacoes = models.TextField(blank=True)
-
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    data_atualizacao = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='itens_checklist_executado_criado')
+    updated_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='itens_checklist_executado_atualizado')
     
     class Meta:
         verbose_name = 'Item Checklist Executado'
@@ -317,9 +344,13 @@ class ItemChecklistExecutado(models.Model):
         
     
 class Arquivos_checklist(models.Model):
-    item_checklist_executado = models.ForeignKey(ItemChecklistExecutado, on_delete=models.CASCADE, related_name='arquivos_checklist')
+    item_checklist_executado = models.ForeignKey(ItemChecklistExecutado, on_delete=models.CASCADE, related_name='arquivos_checklist_exec')
     arquivo = models.CharField(max_length=200)
     tipo = models.CharField(max_length=200, choices=[('foto', 'Foto'), ('documento', 'Documento')])
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    data_atualizacao = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='arquivos_checklist_criado')
+    updated_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='arquivos_checklist_atualizado')
     
     class Meta:
         verbose_name = 'Arquivo Checklist'
@@ -332,3 +363,21 @@ class Arquivos_checklist(models.Model):
     
     
     
+class usuarioOficina(models.Model):
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='usuario_oficina')
+    oficina = models.ForeignKey(Oficina, on_delete=models.CASCADE, related_name='usuario_oficina')
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    data_atualizacao = models.DateTimeField(auto_now=True)
+    ativo = models.BooleanField(default=True)
+    created_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='usuario_oficina_criado')
+    updated_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='usuario_oficina_atualizado')
+    
+    class Meta:
+        verbose_name = 'Usuário Oficina'
+        verbose_name_plural = 'Usuários Oficinas'
+        db_table = 'usuario_oficina'
+        ordering = ['usuario', 'oficina']
+
+
+    def __str__(self):
+        return f"{self.usuario.username} - {self.oficina.nome}"

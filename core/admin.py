@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from .models import (
     Usuario, Veiculo, Profissional, Servico, Manutencao, Avaliacao,
     TipoVeiculo, CategoriaChecklist, ItemChecklist, Checklist, ItemChecklistPersonalizado,
-    ChecklistExecutado, ItemChecklistExecutado, Arquivos_checklist, Oficina
+    ChecklistExecutado, ItemChecklistExecutado, Arquivos_checklist, Oficina, usuarioOficina
 )
 
 @admin.register(Usuario)
@@ -102,11 +102,11 @@ class ChecklistAdmin(admin.ModelAdmin):
 
 @admin.register(ItemChecklistPersonalizado)
 class ItemChecklistPersonalizadoAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'checklist', 'categoria', 'tipo_verificacao', 'critico', 'obrigatorio', 'ordem', 'ativo')
-    list_filter = ('checklist', 'categoria', 'tipo_verificacao', 'critico', 'obrigatorio', 'ativo', 'data_criacao')
-    search_fields = ('nome', 'descricao', 'checklist__nome', 'categoria__nome')
-    ordering = ('checklist', 'categoria__ordem', 'ordem', 'nome')
-    list_editable = ('ordem', 'ativo', 'critico', 'obrigatorio')
+    list_display = ('checklist', 'critico', 'obrigatorio', 'ordem', 'ativo')
+    list_filter = ('checklist', 'critico', 'obrigatorio', 'ativo', 'data_criacao')
+    search_fields = ('descricao', 'checklist__nome')
+    ordering = ('checklist',)
+    list_editable = ('ativo', 'critico', 'obrigatorio')
 
 @admin.register(ChecklistExecutado)
 class ChecklistExecutadoAdmin(admin.ModelAdmin):
@@ -124,14 +124,21 @@ class ChecklistExecutadoAdmin(admin.ModelAdmin):
 
 @admin.register(ItemChecklistExecutado)
 class ItemChecklistExecutadoAdmin(admin.ModelAdmin):
-    list_display = ('checklist_executado', 'item_checklist', 'checked', 'resultado')
-    list_filter = ('checked', 'resultado', 'item_checklist__categoria')
+    list_display = ('checklist_executado', 'item_checklist', 'checked', 'resultado', 'data_criacao', 'data_atualizacao')    
+    list_filter = ('checked', 'resultado', 'item_checklist')
     search_fields = ('item_checklist__nome', 'observacoes')
-    ordering = ('checklist_executado', 'item_checklist__categoria__ordem', 'item_checklist__ordem')
+    ordering = ('checklist_executado', 'item_checklist__ordem')
 
 @admin.register(Arquivos_checklist)
 class ArquivosChecklistAdmin(admin.ModelAdmin):
-    list_display = ('item_checklist_executado', 'arquivo', 'tipo')
-    list_filter = ('tipo', 'item_checklist_executado__item_checklist__categoria')
-    search_fields = ('arquivo', 'item_checklist_executado__item_checklist__nome')
+    list_display = ('item_checklist_executado', 'arquivo', 'tipo', 'data_criacao', 'data_atualizacao')
+    list_filter = ('tipo', 'item_checklist_executado')
+    search_fields = ('arquivo', 'item_checklist_executado')
     ordering = ('item_checklist_executado', 'arquivo')
+
+@admin.register(usuarioOficina)
+class usuarioOficinaAdmin(admin.ModelAdmin):
+    list_display = ('usuario', 'oficina', 'ativo', 'data_criacao', 'data_atualizacao')
+    list_filter = ('ativo', 'data_criacao', 'data_atualizacao')
+    search_fields = ('usuario__username', 'oficina__nome')
+    ordering = ('usuario', 'oficina')
