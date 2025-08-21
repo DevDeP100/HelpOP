@@ -1161,6 +1161,74 @@
     </div>
 </section>
 
+<!-- Seção Específica para Oficinas -->
+{% if user.is_authenticated and user.is_oficina %}
+<section class="oficina-dashboard-section" style="background: linear-gradient(135deg, var(--primary-black) 0%, var(--secondary-black) 100%); padding: 40px 60px; border-top: 2px solid var(--primary-yellow);">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="text-center mb-4">
+                    <h2 class="text-warning mb-2">
+                        <i class="fas fa-building me-2"></i>Painel da Oficina
+                    </h2>
+                    <p class="text-light">Bem-vindo(a), {{ user.get_full_name|default:user.username }}! Gerencie seus checklists e serviços.</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <div class="card h-100" style="background: var(--secondary-black); border: 1px solid var(--primary-yellow);">
+                    <div class="card-body text-center">
+                        <i class="fas fa-tasks" style="font-size: 2.5rem; color: var(--primary-yellow); margin-bottom: 1rem;"></i>
+                        <h5 class="text-warning">Gerenciar Checklists</h5>
+                        <p class="text-light small mb-3">Visualize, edite e controle todos os seus checklists</p>
+                        <a href="{% url 'checklist_gerenciar' %}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-cog me-1"></i>Gerenciar
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card h-100" style="background: var(--secondary-black); border: 1px solid var(--primary-yellow);">
+                    <div class="card-body text-center">
+                        <i class="fas fa-plus-circle" style="font-size: 2.5rem; color: var(--primary-yellow); margin-bottom: 1rem;"></i>
+                        <h5 class="text-warning">Criar Checklist</h5>
+                        <p class="text-light small mb-3">Crie novos checklists personalizados</p>
+                        <a href="{% url 'checklist_criar' %}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-plus me-1"></i>Criar Novo
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card h-100" style="background: var(--secondary-black); border: 1px solid var(--primary-yellow);">
+                    <div class="card-body text-center">
+                        <i class="fas fa-list" style="font-size: 2.5rem; color: var(--primary-yellow); margin-bottom: 1rem;"></i>
+                        <h5 class="text-warning">Lista Simples</h5>
+                        <p class="text-light small mb-3">Visualização tradicional dos checklists</p>
+                        <a href="{% url 'checklist_lista' %}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-eye me-1"></i>Ver Lista
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card h-100" style="background: var(--secondary-black); border: 1px solid var(--primary-yellow);">
+                    <div class="card-body text-center">
+                        <i class="fas fa-database" style="font-size: 2.5rem; color: var(--primary-yellow); margin-bottom: 1rem;"></i>
+                        <h5 class="text-warning">Dados Base</h5>
+                        <p class="text-light small mb-3">Acesse dados populados do sistema</p>
+                        <a href="{% url 'view_checklist_data' %}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-chart-bar me-1"></i>Ver Dados
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
 <!-- Stats and HelpOPCheck Section -->
 <section class="stats-helpopcheck-section">
     <div class="container-fluid">
@@ -1473,4 +1541,4 @@
         </div>
     </div>
 </section>
-{% endblock %} 
+{% endblock %}

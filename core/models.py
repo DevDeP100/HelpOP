@@ -251,7 +251,7 @@ class ItemChecklist(models.Model):
         verbose_name = 'Item do Checklist'
         verbose_name_plural = 'Itens do Checklist'
         db_table = 'itens_checklist'
-        ordering = ['categoria__ordem', 'ordem', 'nome']
+        ordering = ['ordem', 'nome']
 
 class Checklist(models.Model):
     """Checklist personalizado de uma oficina para um tipo de veículo"""
@@ -291,7 +291,7 @@ class ItemChecklistPersonalizado(models.Model):
     updated_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='itens_checklist_personalizados_atualizado')
     
     def __str__(self):
-        return f"{self.checklist.nome} - {self.nome}"
+        return f"{self.checklist.nome} - Item {self.ordem}"
     
     class Meta:
         verbose_name = 'Item Personalizado do Checklist'
@@ -326,8 +326,8 @@ class ChecklistExecutado(models.Model):
     
 
 class ItemChecklistExecutado(models.Model):
-    checklist_executado = models.ForeignKey(ChecklistExecutado, on_delete=models.CASCADE, related_name='checklist_executado')
-    item_checklist = models.ForeignKey(ItemChecklistPersonalizado, on_delete=models.CASCADE, related_name='itens_checklist_personalizados')
+    checklist_executado = models.ForeignKey(ChecklistExecutado, on_delete=models.CASCADE, related_name='itens_executados')
+    item_checklist = models.ForeignKey(ItemChecklistPersonalizado, on_delete=models.CASCADE, related_name='itens_checklist_executados')
     checked = models.BooleanField(default=False)
     resultado = models.CharField(max_length=200)
     observacoes = models.TextField(blank=True)
@@ -340,11 +340,11 @@ class ItemChecklistExecutado(models.Model):
         verbose_name = 'Item Checklist Executado'
         verbose_name_plural = 'Itens Checklist Executados'
         db_table = 'itens_checklist_executado'
-        ordering = ['checklist_executado', 'item_checklist', 'resultado']
+        ordering = ['checklist_executado', 'item_checklist__ordem', 'resultado']
         
     
 class Arquivos_checklist(models.Model):
-    item_checklist_executado = models.ForeignKey(ItemChecklistExecutado, on_delete=models.CASCADE, related_name='arquivos_checklist_exec')
+    item_checklist_executado = models.ForeignKey(ItemChecklistExecutado, on_delete=models.CASCADE, related_name='arquivos')
     arquivo = models.CharField(max_length=200)
     tipo = models.CharField(max_length=200, choices=[('foto', 'Foto'), ('documento', 'Documento')])
     data_criacao = models.DateTimeField(auto_now_add=True)
@@ -359,7 +359,7 @@ class Arquivos_checklist(models.Model):
         ordering = ['item_checklist_executado', 'arquivo']
 
     def __str__(self):
-        return f"{self.item_checklist_executado.checklist_executado.checklist.oficina.nome} - {self.item_checklist_executado.checklist_executado.checklist.tipo_veiculo.nome} - {self.item_checklist_executado.item_checklist.categoria.nome} - {self.item_checklist_executado.item_checklist.nome} - {self.arquivo}"
+        return f"{self.item_checklist_executado.checklist_executado.checklist.oficina.nome} - {self.item_checklist_executado.checklist_executado.checklist.tipo_veiculo.nome} - {self.arquivo}"
     
     
     

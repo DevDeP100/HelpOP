@@ -1,0 +1,1656 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dados de Checklist Automotivo - HelpOP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .category-card { 
+            border-left: 4px solid #ffc107; 
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .category-header {
+            background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+            color: #000;
+            font-weight: bold;
+        }
+        .item-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .item-badge {
+            background-color: #e9ecef;
+            color: #495057;
+            font-size: 0.85rem;
+        }
+        .flex-grow-1 {
+            color: #212529;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="text-center">
+                    <h1 class="display-4 text-warning mb-3">
+                        <i class="fas fa-clipboard-list me-3"></i>
+                        Dados de Checklist Automotivo
+                    </h1>
+                    <p class="lead text-muted">Sistema HelpOP - Base de dados populada com sucesso</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Estatísticas -->
+        <div class="row mb-5">
+            <div class="col-md-6">
+                <div class="card stats-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-folder-open fa-3x mb-3"></i>
+                        <h3 class="card-title">10</h3>
+                        <p class="card-text">Categorias de Checklist</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card stats-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-tasks fa-3x mb-3"></i>
+                        <h3 class="card-title">165</h3>
+                        <p class="card-text">Itens de Verificação</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Categorias e Itens -->
+        
+        <div class="card category-card">
+            <div class="card-header category-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h4 class="mb-0">
+                            <i class="fas fa-cog me-2"></i>
+                            1. Motor
+                        </h4>
+                        <small class="text-dark">Verificações relacionadas ao motor e sistema de combustão</small>
+                    </div>
+                    <div class="col-auto">
+                        <span class="badge bg-dark">20 itens</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="item-list">
+                    <div class="row">
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">1</span>
+                                <span class="flex-grow-1">Verificar nível de óleo do motor</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">2</span>
+                                <span class="flex-grow-1">Verificar cor e consistência do óleo</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">3</span>
+                                <span class="flex-grow-1">Verificar vazamentos de óleo</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">4</span>
+                                <span class="flex-grow-1">Verificar nível do líquido de arrefecimento</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">5</span>
+                                <span class="flex-grow-1">Verificar estado das mangueiras do radiador</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">6</span>
+                                <span class="flex-grow-1">Verificar funcionamento do ventilador</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">7</span>
+                                <span class="flex-grow-1">Verificar correia do alternador</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">8</span>
+                                <span class="flex-grow-1">Verificar correia da direção hidráulica</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">9</span>
+                                <span class="flex-grow-1">Verificar correia do ar condicionado</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">10</span>
+                                <span class="flex-grow-1">Verificar filtro de ar</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">11</span>
+                                <span class="flex-grow-1">Verificar velas de ignição</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">12</span>
+                                <span class="flex-grow-1">Verificar cabos de vela</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">13</span>
+                                <span class="flex-grow-1">Verificar bateria e terminais</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">14</span>
+                                <span class="flex-grow-1">Verificar funcionamento do motor de partida</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">15</span>
+                                <span class="flex-grow-1">Verificar alternador</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">16</span>
+                                <span class="flex-grow-1">Verificar sistema de escape</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">17</span>
+                                <span class="flex-grow-1">Verificar catalisador</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">18</span>
+                                <span class="flex-grow-1">Verificar sensor de oxigênio</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">19</span>
+                                <span class="flex-grow-1">Verificar sistema de injeção eletrônica</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">20</span>
+                                <span class="flex-grow-1">Verificar filtro de combustível</span>
+                                
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card category-card">
+            <div class="card-header category-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h4 class="mb-0">
+                            <i class="fas fa-cog me-2"></i>
+                            2. Freios
+                        </h4>
+                        <small class="text-dark">Sistema de frenagem e componentes relacionados</small>
+                    </div>
+                    <div class="col-auto">
+                        <span class="badge bg-dark">15 itens</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="item-list">
+                    <div class="row">
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">1</span>
+                                <span class="flex-grow-1">Verificar nível do fluido de freio</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">2</span>
+                                <span class="flex-grow-1">Verificar cor do fluido de freio</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">3</span>
+                                <span class="flex-grow-1">Verificar vazamentos no sistema</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">4</span>
+                                <span class="flex-grow-1">Verificar espessura das pastilhas dianteiras</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">5</span>
+                                <span class="flex-grow-1">Verificar espessura das pastilhas traseiras</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">6</span>
+                                <span class="flex-grow-1">Verificar estado dos discos de freio</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">7</span>
+                                <span class="flex-grow-1">Verificar funcionamento do freio de mão</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">8</span>
+                                <span class="flex-grow-1">Verificar cabo do freio de mão</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">9</span>
+                                <span class="flex-grow-1">Verificar cilindro mestre</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">10</span>
+                                <span class="flex-grow-1">Verificar servo freio</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">11</span>
+                                <span class="flex-grow-1">Verificar mangueiras de freio</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">12</span>
+                                <span class="flex-grow-1">Verificar ABS (se equipado)</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">13</span>
+                                <span class="flex-grow-1">Verificar pedal de freio</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">14</span>
+                                <span class="flex-grow-1">Verificar luz de freio</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">15</span>
+                                <span class="flex-grow-1">Verificar regulagem do freio traseiro</span>
+                                
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card category-card">
+            <div class="card-header category-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h4 class="mb-0">
+                            <i class="fas fa-cog me-2"></i>
+                            3. Suspensão
+                        </h4>
+                        <small class="text-dark">Sistema de suspensão e direção</small>
+                    </div>
+                    <div class="col-auto">
+                        <span class="badge bg-dark">15 itens</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="item-list">
+                    <div class="row">
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">1</span>
+                                <span class="flex-grow-1">Verificar amortecedores dianteiros</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">2</span>
+                                <span class="flex-grow-1">Verificar amortecedores traseiros</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">3</span>
+                                <span class="flex-grow-1">Verificar molas dianteiras</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">4</span>
+                                <span class="flex-grow-1">Verificar molas traseiras</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">5</span>
+                                <span class="flex-grow-1">Verificar buchas da suspensão</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">6</span>
+                                <span class="flex-grow-1">Verificar pivôs da suspensão</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">7</span>
+                                <span class="flex-grow-1">Verificar barra estabilizadora</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">8</span>
+                                <span class="flex-grow-1">Verificar coxins do amortecedor</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">9</span>
+                                <span class="flex-grow-1">Verificar batentes da suspensão</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">10</span>
+                                <span class="flex-grow-1">Verificar coifas da suspensão</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">11</span>
+                                <span class="flex-grow-1">Verificar alinhamento das rodas</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">12</span>
+                                <span class="flex-grow-1">Verificar balanceamento das rodas</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">13</span>
+                                <span class="flex-grow-1">Verificar geometria da suspensão</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">14</span>
+                                <span class="flex-grow-1">Verificar folgas na direção</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">15</span>
+                                <span class="flex-grow-1">Verificar funcionamento da direção hidráulica</span>
+                                
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card category-card">
+            <div class="card-header category-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h4 class="mb-0">
+                            <i class="fas fa-cog me-2"></i>
+                            4. Direção
+                        </h4>
+                        <small class="text-dark">Sistema de direção e componentes</small>
+                    </div>
+                    <div class="col-auto">
+                        <span class="badge bg-dark">13 itens</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="item-list">
+                    <div class="row">
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">1</span>
+                                <span class="flex-grow-1">Verificar fluido da direção hidráulica</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">2</span>
+                                <span class="flex-grow-1">Verificar vazamentos na direção</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">3</span>
+                                <span class="flex-grow-1">Verificar bomba da direção hidráulica</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">4</span>
+                                <span class="flex-grow-1">Verificar mangueiras da direção</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">5</span>
+                                <span class="flex-grow-1">Verificar caixa de direção</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">6</span>
+                                <span class="flex-grow-1">Verificar terminais de direção</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">7</span>
+                                <span class="flex-grow-1">Verificar rotulas da direção</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">8</span>
+                                <span class="flex-grow-1">Verificar coifas da direção</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">9</span>
+                                <span class="flex-grow-1">Verificar volante</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">10</span>
+                                <span class="flex-grow-1">Verificar coluna de direção</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">11</span>
+                                <span class="flex-grow-1">Verificar funcionamento da direção elétrica (se equipado)</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">12</span>
+                                <span class="flex-grow-1">Verificar sensor de direção (se equipado)</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">13</span>
+                                <span class="flex-grow-1">Verificar assistência da direção</span>
+                                
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card category-card">
+            <div class="card-header category-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h4 class="mb-0">
+                            <i class="fas fa-cog me-2"></i>
+                            5. Pneus e Rodas
+                        </h4>
+                        <small class="text-dark">Pneus, rodas e componentes relacionados</small>
+                    </div>
+                    <div class="col-auto">
+                        <span class="badge bg-dark">14 itens</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="item-list">
+                    <div class="row">
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">1</span>
+                                <span class="flex-grow-1">Verificar pressão dos pneus</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">2</span>
+                                <span class="flex-grow-1">Verificar desgaste dos pneus dianteiros</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">3</span>
+                                <span class="flex-grow-1">Verificar desgaste dos pneus traseiros</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">4</span>
+                                <span class="flex-grow-1">Verificar desgaste irregular dos pneus</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">5</span>
+                                <span class="flex-grow-1">Verificar profundidade do sulco</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">6</span>
+                                <span class="flex-grow-1">Verificar estado das rodas</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">7</span>
+                                <span class="flex-grow-1">Verificar porcas das rodas</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">8</span>
+                                <span class="flex-grow-1">Verificar estepe</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">9</span>
+                                <span class="flex-grow-1">Verificar macaco</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">10</span>
+                                <span class="flex-grow-1">Verificar chave de roda</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">11</span>
+                                <span class="flex-grow-1">Verificar válvulas dos pneus</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">12</span>
+                                <span class="flex-grow-1">Verificar balanceamento</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">13</span>
+                                <span class="flex-grow-1">Verificar alinhamento</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">14</span>
+                                <span class="flex-grow-1">Verificar calibragem</span>
+                                
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card category-card">
+            <div class="card-header category-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h4 class="mb-0">
+                            <i class="fas fa-cog me-2"></i>
+                            6. Transmissão
+                        </h4>
+                        <small class="text-dark">Sistema de transmissão e embreagem</small>
+                    </div>
+                    <div class="col-auto">
+                        <span class="badge bg-dark">14 itens</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="item-list">
+                    <div class="row">
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">1</span>
+                                <span class="flex-grow-1">Verificar óleo da transmissão</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">2</span>
+                                <span class="flex-grow-1">Verificar vazamentos na transmissão</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">3</span>
+                                <span class="flex-grow-1">Verificar funcionamento da embreagem</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">4</span>
+                                <span class="flex-grow-1">Verificar fluido da embreagem</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">5</span>
+                                <span class="flex-grow-1">Verificar cabo da embreagem</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">6</span>
+                                <span class="flex-grow-1">Verificar pedal da embreagem</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">7</span>
+                                <span class="flex-grow-1">Verificar homocinéticas</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">8</span>
+                                <span class="flex-grow-1">Verificar coifas das homocinéticas</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">9</span>
+                                <span class="flex-grow-1">Verificar semieixos</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">10</span>
+                                <span class="flex-grow-1">Verificar diferencial</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">11</span>
+                                <span class="flex-grow-1">Verificar óleo do diferencial</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">12</span>
+                                <span class="flex-grow-1">Verificar funcionamento do câmbio</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">13</span>
+                                <span class="flex-grow-1">Verificar sincronizadores</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">14</span>
+                                <span class="flex-grow-1">Verificar alavanca do câmbio</span>
+                                
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card category-card">
+            <div class="card-header category-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h4 class="mb-0">
+                            <i class="fas fa-cog me-2"></i>
+                            7. Elétrica
+                        </h4>
+                        <small class="text-dark">Sistema elétrico e eletrônico</small>
+                    </div>
+                    <div class="col-auto">
+                        <span class="badge bg-dark">22 itens</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="item-list">
+                    <div class="row">
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">1</span>
+                                <span class="flex-grow-1">Verificar bateria</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">2</span>
+                                <span class="flex-grow-1">Verificar alternador</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">3</span>
+                                <span class="flex-grow-1">Verificar motor de partida</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">4</span>
+                                <span class="flex-grow-1">Verificar fusíveis</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">5</span>
+                                <span class="flex-grow-1">Verificar relés</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">6</span>
+                                <span class="flex-grow-1">Verificar chicote elétrico</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">7</span>
+                                <span class="flex-grow-1">Verificar faróis dianteiros</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">8</span>
+                                <span class="flex-grow-1">Verificar lanternas traseiras</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">9</span>
+                                <span class="flex-grow-1">Verificar pisca-pisca</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">10</span>
+                                <span class="flex-grow-1">Verificar luz de freio</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">11</span>
+                                <span class="flex-grow-1">Verificar luz de ré</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">12</span>
+                                <span class="flex-grow-1">Verificar luz de placa</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">13</span>
+                                <span class="flex-grow-1">Verificar farol de neblina</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">14</span>
+                                <span class="flex-grow-1">Verificar buzina</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">15</span>
+                                <span class="flex-grow-1">Verificar limpador de para-brisa</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">16</span>
+                                <span class="flex-grow-1">Verificar lavador de para-brisa</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">17</span>
+                                <span class="flex-grow-1">Verificar ar condicionado</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">18</span>
+                                <span class="flex-grow-1">Verificar aquecedor</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">19</span>
+                                <span class="flex-grow-1">Verificar rádio</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">20</span>
+                                <span class="flex-grow-1">Verificar sistema de alarme</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">21</span>
+                                <span class="flex-grow-1">Verificar travas elétricas</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">22</span>
+                                <span class="flex-grow-1">Verificar vidros elétricos</span>
+                                
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card category-card">
+            <div class="card-header category-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h4 class="mb-0">
+                            <i class="fas fa-cog me-2"></i>
+                            8. Carroceria
+                        </h4>
+                        <small class="text-dark">Estrutura da carroceria e componentes externos</small>
+                    </div>
+                    <div class="col-auto">
+                        <span class="badge bg-dark">18 itens</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="item-list">
+                    <div class="row">
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">1</span>
+                                <span class="flex-grow-1">Verificar estado da pintura</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">2</span>
+                                <span class="flex-grow-1">Verificar riscos na pintura</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">3</span>
+                                <span class="flex-grow-1">Verificar amassados na lataria</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">4</span>
+                                <span class="flex-grow-1">Verificar corrosão/ferrugem</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">5</span>
+                                <span class="flex-grow-1">Verificar para-choques</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">6</span>
+                                <span class="flex-grow-1">Verificar para-lamas</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">7</span>
+                                <span class="flex-grow-1">Verificar portas</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">8</span>
+                                <span class="flex-grow-1">Verificar fechaduras das portas</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">9</span>
+                                <span class="flex-grow-1">Verificar dobradiças das portas</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">10</span>
+                                <span class="flex-grow-1">Verificar vidros</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">11</span>
+                                <span class="flex-grow-1">Verificar para-brisa</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">12</span>
+                                <span class="flex-grow-1">Verificar vidro traseiro</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">13</span>
+                                <span class="flex-grow-1">Verificar espelhos retrovisores</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">14</span>
+                                <span class="flex-grow-1">Verificar antena</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">15</span>
+                                <span class="flex-grow-1">Verificar teto solar (se equipado)</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">16</span>
+                                <span class="flex-grow-1">Verificar bagageiro</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">17</span>
+                                <span class="flex-grow-1">Verificar capô</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">18</span>
+                                <span class="flex-grow-1">Verificar tampa do porta-malas</span>
+                                
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card category-card">
+            <div class="card-header category-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h4 class="mb-0">
+                            <i class="fas fa-cog me-2"></i>
+                            9. Interior
+                        </h4>
+                        <small class="text-dark">Componentes internos do veículo</small>
+                    </div>
+                    <div class="col-auto">
+                        <span class="badge bg-dark">19 itens</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="item-list">
+                    <div class="row">
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">1</span>
+                                <span class="flex-grow-1">Verificar bancos dianteiros</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">2</span>
+                                <span class="flex-grow-1">Verificar bancos traseiros</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">3</span>
+                                <span class="flex-grow-1">Verificar cintos de segurança</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">4</span>
+                                <span class="flex-grow-1">Verificar painel de instrumentos</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">5</span>
+                                <span class="flex-grow-1">Verificar velocímetro</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">6</span>
+                                <span class="flex-grow-1">Verificar hodômetro</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">7</span>
+                                <span class="flex-grow-1">Verificar indicador de combustível</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">8</span>
+                                <span class="flex-grow-1">Verificar indicador de temperatura</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">9</span>
+                                <span class="flex-grow-1">Verificar luzes de advertência</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">10</span>
+                                <span class="flex-grow-1">Verificar ar condicionado</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">11</span>
+                                <span class="flex-grow-1">Verificar aquecedor</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">12</span>
+                                <span class="flex-grow-1">Verificar ventilação</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">13</span>
+                                <span class="flex-grow-1">Verificar rádio/som</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">14</span>
+                                <span class="flex-grow-1">Verificar porta-luvas</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">15</span>
+                                <span class="flex-grow-1">Verificar console central</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">16</span>
+                                <span class="flex-grow-1">Verificar tapetes</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">17</span>
+                                <span class="flex-grow-1">Verificar forração do teto</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">18</span>
+                                <span class="flex-grow-1">Verificar apoios de cabeça</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">19</span>
+                                <span class="flex-grow-1">Verificar apoios de braço</span>
+                                
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card category-card">
+            <div class="card-header category-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h4 class="mb-0">
+                            <i class="fas fa-cog me-2"></i>
+                            10. Segurança
+                        </h4>
+                        <small class="text-dark">Itens de segurança obrigatórios e opcionais</small>
+                    </div>
+                    <div class="col-auto">
+                        <span class="badge bg-dark">15 itens</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="item-list">
+                    <div class="row">
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">1</span>
+                                <span class="flex-grow-1">Verificar triângulo de segurança</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">2</span>
+                                <span class="flex-grow-1">Verificar extintor de incêndio</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">3</span>
+                                <span class="flex-grow-1">Verificar kit de primeiros socorros</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">4</span>
+                                <span class="flex-grow-1">Verificar chave de roda</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">5</span>
+                                <span class="flex-grow-1">Verificar macaco</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">6</span>
+                                <span class="flex-grow-1">Verificar estepe</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">7</span>
+                                <span class="flex-grow-1">Verificar cintos de segurança</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">8</span>
+                                <span class="flex-grow-1">Verificar airbags (se equipado)</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">9</span>
+                                <span class="flex-grow-1">Verificar travas de segurança</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">10</span>
+                                <span class="flex-grow-1">Verificar alarme</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">11</span>
+                                <span class="flex-grow-1">Verificar sistema antifurto</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">12</span>
+                                <span class="flex-grow-1">Verificar documentação do veículo</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">13</span>
+                                <span class="flex-grow-1">Verificar CRLV</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">14</span>
+                                <span class="flex-grow-1">Verificar seguro obrigatório</span>
+                                
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge item-badge me-2">15</span>
+                                <span class="flex-grow-1">Verificar licenciamento</span>
+                                
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="text-center mt-5">
+            <p class="text-muted">
+                <i class="fas fa-check-circle text-success me-2"></i>
+                Base de dados populada com sucesso! Acesse o painel administrativo para gerenciar os dados.
+            </p>
+            <a href="/admin/" class="btn btn-warning me-2">
+                <i class="fas fa-cog me-2"></i>Painel Admin
+            </a>
+            <a href="/checklist/" class="btn btn-primary">
+                <i class="fas fa-clipboard-check me-2"></i>Ver Checklists
+            </a>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+    

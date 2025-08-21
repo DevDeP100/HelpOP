@@ -167,7 +167,7 @@ class ChecklistExecutadoSerializer(serializers.ModelSerializer):
 
 class ItemChecklistExecutadoSerializer(serializers.ModelSerializer):
     checklist_executado_info = serializers.CharField(source='checklist_executado.__str__', read_only=True)
-    item_checklist_nome = serializers.CharField(source='item_checklist.item_padrao.nome', read_only=True)
+    item_checklist_nome = serializers.CharField(source='item_checklist.__str__', read_only=True)
     
     class Meta:
         model = ItemChecklistExecutado
@@ -206,7 +206,7 @@ class ChecklistExecutadoDetalhadoSerializer(serializers.ModelSerializer):
     checklist = ChecklistSerializer(read_only=True)
     veiculo = VeiculoSerializer(read_only=True)
     usuario = UsuarioSerializer(read_only=True)
-    itens_executados = ItemChecklistExecutadoSerializer(many=True, read_only=True, source='checklist_executado')
+    itens_executados = ItemChecklistExecutadoSerializer(many=True, read_only=True, source='itens_executados')
     
     class Meta:
         model = ChecklistExecutado

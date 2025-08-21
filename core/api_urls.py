@@ -5,7 +5,7 @@ from .api_views import (
     ServicoViewSet, ManutencaoViewSet, AvaliacaoViewSet,
     TipoVeiculoViewSet, CategoriaChecklistViewSet, ItemChecklistViewSet,
     ChecklistViewSet, ItemChecklistPersonalizadoViewSet, ChecklistExecutadoViewSet,
-    ItemChecklistExecutadoViewSet, ArquivosChecklistViewSet
+    ItemChecklistExecutadoViewSet, ArquivosChecklistViewSet, UsuarioOficinaViewSet
 )
 from .auth_views import api_login, api_logout
 
@@ -30,6 +30,9 @@ router.register(r'itens-checklist-personalizados', ItemChecklistPersonalizadoVie
 router.register(r'checklists-executados', ChecklistExecutadoViewSet, basename='checklistexecutado')
 router.register(r'itens-checklist-executados', ItemChecklistExecutadoViewSet, basename='itemchecklistexecutado')
 router.register(r'arquivos-checklist', ArquivosChecklistViewSet, basename='arquivoschecklist')
+
+# ViewSet para UsuarioOficina
+router.register(r'usuarios-oficina', UsuarioOficinaViewSet, basename='usuariooficina')
 
 # URLs da API
 urlpatterns = [

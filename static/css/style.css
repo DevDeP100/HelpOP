@@ -133,29 +133,98 @@ body {
     font-weight: bold;
 }
 
-/* Alertas */
+/* Alertas - Sobrescrevendo Bootstrap */
+.alert.alert-info,
 .alert-info {
-    background-color: rgba(23, 162, 184, 0.2);
-    border-color: var(--info-color);
-    color: var(--text-light);
+    background-color: #17a2b8 !important;
+    border-color: #17a2b8 !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
 }
 
+.alert.alert-success,
 .alert-success {
-    background-color: rgba(40, 167, 69, 0.2);
-    border-color: var(--success-color);
-    color: var(--text-light);
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
 }
 
+.alert.alert-warning,
 .alert-warning {
-    background-color: rgba(255, 193, 7, 0.2);
-    border-color: var(--warning-color);
-    color: var(--text-light);
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+    color: #212529 !important;
+    font-weight: 600 !important;
 }
 
-.alert-danger {
-    background-color: rgba(220, 53, 69, 0.2);
-    border-color: var(--danger-color);
-    color: var(--text-light);
+.alert.alert-danger,
+.alert-danger,
+.alert.alert-error,
+.alert-error {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+/* Estilos gerais para todos os alertas */
+.alert {
+    border-radius: 8px !important;
+    border-width: 2px !important;
+    font-size: 1rem !important;
+    padding: 1rem 1.25rem !important;
+    margin-bottom: 1rem !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Alertas específicos para páginas de autenticação */
+.auth-pages .alert-danger,
+.auth-pages .alert-error {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.auth-pages .alert-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.auth-pages .alert-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.auth-pages .alert-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Estilo específico para mensagem de aprovação pendente */
+.alert-info .fas.fa-clock {
+    color: #ffffff;
+    font-size: 1.2rem;
+}
+
+.alert-info hr {
+    border-color: rgba(255, 255, 255, 0.3);
+    margin: 0.75rem 0;
+}
+
+.alert-info .text-muted {
+    color: rgba(255, 255, 255, 0.8) !important;
 }
 
 /* Dashboard */
@@ -266,4 +335,4 @@ body {
 .carousel-indicators button.active {
     background-color: var(--text-light);
     border-color: var(--primary-yellow);
-} 
+}

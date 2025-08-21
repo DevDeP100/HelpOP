@@ -59,6 +59,8 @@ urlpatterns = [
     path('profissional/editar-manutencao/<int:manutencao_id>/', views.profissional_editar_manutencao, name='profissional_editar_manutencao'),
     # Checklist
     path('checklist/', views.checklist_lista, name='checklist_lista'),
+    path('checklist/gerenciar/', views.checklist_gerenciar, name='checklist_gerenciar'),
+    path('checklist/dados-populados/', views.view_checklist_data, name='view_checklist_data'),
     path('checklist/criar/', views.checklist_criar, name='checklist_criar'),
     path('checklist/<int:checklist_id>/', views.checklist_detalhes, name='checklist_detalhes'),
     path('checklist/<int:checklist_id>/editar/', views.checklist_editar, name='checklist_editar'),
@@ -74,4 +76,4 @@ if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
     # Adicionar URL específica para o logo
-    urlpatterns += static('static/images/', document_root=settings.BASE_DIR / 'static' / 'images') 
+    urlpatterns += static('static/images/', document_root=settings.BASE_DIR / 'static' / 'images')

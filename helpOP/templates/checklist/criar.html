@@ -76,7 +76,7 @@
                         <h6 class="text-warning">Tipos de Veículos Disponíveis:</h6>
                         <ul class="list-unstyled">
                             {% for tipo in tipos_veiculos %}
-                                <li><i class="fas fa-car me-2"></i>{{ tipo.nome }}</li>
+                                <li class="text-light"><i class="fas fa-car me-2"></i>{{ tipo.nome }}</li>
                             {% endfor %}
                         </ul>
                     </div>
@@ -85,7 +85,7 @@
                         <h6 class="text-warning">Categorias Padrão:</h6>
                         <ul class="list-unstyled">
                             {% for categoria in categorias %}
-                                <li><i class="fas fa-tools me-2"></i>{{ categoria.nome }}</li>
+                                <li class="text-light"><i class="fas fa-tools me-2"></i>{{ categoria.nome }}</li>
                             {% endfor %}
                         </ul>
                     </div>
@@ -106,4 +106,4 @@
     // Adicionar classe auth-pages ao body
     document.body.classList.add('auth-pages');
 </script>
-{% endblock %} 
+{% endblock %}

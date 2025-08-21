@@ -3,7 +3,14 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
-from django.db.models import Sum, Count, Q
+from django.http import JsonResponse, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.core.paginator import Paginator
+from django.db.models import Sum, Count, Q, Avg, Max
+from django.utils import timezone
+from datetime import datetime, timedelta
+import json
 from .models import (
     Usuario, Veiculo, Manutencao, Profissional, Servico,
     TipoVeiculo, CategoriaChecklist, ItemChecklist, Checklist, 
@@ -32,8 +39,13 @@ def login_view(request):
             
             # Verificar se profissional/oficina está aprovado (exceto administradores)
             if not user.is_staff and (user.is_profissional or user.is_oficina) and user.aprovado_pendente:
-                messages.warning(request, 'Sua conta está aguardando aprovação do administrador. Você receberá um email quando for aprovado.')
-                return redirect('home')
+                # Não fazer login, apenas mostrar mensagem na tela
+                context = {
+                    'pending_approval': True,
+                    'user_type': 'Profissional' if user.is_profissional else 'Oficina',
+                    'username': username
+                }
+                return render(request, 'auth/login.html', context)
             
             login(request, user)
             messages.success(request, f'Bem-vindo de volta, {user.get_full_name() or user.username}!')
@@ -59,7 +71,11 @@ def cadastro_view(request):
             
             # Se for profissional ou oficina, criar perfil profissional
             if form.cleaned_data.get('is_profissional') or form.cleaned_data.get('is_oficina'):
-                Profissional.objects.create(usuario=user)
+                Profissional.objects.create(
+                    usuario=user,
+                    created_by=user,
+                    updated_by=user
+                )
             
             # Para administradores, não enviar código de verificação
             if user.is_staff:
@@ -303,14 +319,32 @@ def admin_aprovar_usuarios(request):
                     user.perfil_profissional.aprovado = True
                     user.perfil_profissional.save()
                 
-                messages.success(request, f'Usuário {user.get_full_name()} aprovado com sucesso!')
-                
-                # TODO: Enviar email de notificação para o usuário
+                # Enviar email de aprovação
+                try:
+                    from .email_utils import enviar_email_aprovacao
+                    if enviar_email_aprovacao(user):
+                        messages.success(request, f'Usuário {user.get_full_name()} aprovado e email enviado com sucesso!')
+                    else:
+                        messages.warning(request, f'Usuário {user.get_full_name()} aprovado, mas falha no envio do email.')
+                except Exception as e:
+                    messages.success(request, f'Usuário {user.get_full_name()} aprovado com sucesso!')
+                    messages.warning(request, f'Email não foi enviado devido a um erro técnico.')
                 
             elif action == 'rejeitar':
+                # Enviar email de rejeição antes de deletar
+                try:
+                    from .email_utils import enviar_email_rejeicao
+                    motivo = "Dados fornecidos não atendem aos critérios de aprovação da plataforma"
+                    if enviar_email_rejeicao(user, motivo):
+                        messages.success(request, f'Email de rejeição enviado e usuário removido do sistema.')
+                    else:
+                        messages.warning(request, f'Usuário rejeitado, mas falha no envio do email.')
+                except Exception as e:
+                    messages.success(request, f'Usuário rejeitado e removido do sistema.')
+                    messages.warning(request, f'Email não foi enviado devido a um erro técnico.')
+                
                 # Deletar o usuário rejeitado
                 user.delete()
-                messages.success(request, f'Usuário rejeitado e removido do sistema.')
                 
         except Usuario.DoesNotExist:
             messages.error(request, 'Usuário não encontrado.')
@@ -627,13 +661,23 @@ def checklist_criar(request):
         nome = request.POST.get('nome')
         tipo_veiculo_id = request.POST.get('tipo_veiculo')
         descricao = request.POST.get('descricao', '')
+
+        print(50*'=')
+        print('Inicio da criação do checklist')
+        print(50*'=')
         
         if nome and tipo_veiculo_id:
             tipo_veiculo = get_object_or_404(TipoVeiculo, id=tipo_veiculo_id)
             
+            print(50*'=')
+            print('Tipo de veículo: ', tipo_veiculo)
+            print(50*'=')
             # Pegar a oficina diretamente do usuário logado
             try:
                 oficina = request.user.oficina
+                print(50*'=')
+                print('Oficina: ', oficina)
+                print(50*'=')
                 if not oficina:
                     messages.error(request, 'Você não possui uma oficina associada. Entre em contato com o administrador.')
                     return redirect('checklist_lista')
@@ -650,6 +694,7 @@ def checklist_criar(request):
                 updated_by=request.user
             )
             
+            print(checklist)
             messages.success(request, f'Checklist "{nome}" criado com sucesso!')
             return redirect('checklist_detalhes', checklist_id=checklist.id)
         else:
@@ -685,7 +730,7 @@ def checklist_detalhes(request, checklist_id):
     
     context = {
         'checklist': checklist,
-        'itens_personalizados': checklist.itens_personalizados.filter(ativo=True).order_by('categoria__ordem', 'ordem'),
+        'itens_personalizados': checklist.itens_personalizados.filter(ativo=True).order_by('ordem'),
         'execucoes': checklist.checklist_executado.all().order_by('-data_execucao')[:5],
     }
     return render(request, 'checklist/detalhes.html', context)
@@ -760,7 +805,7 @@ def checklist_executar(request, checklist_id):
             messages.error(request, 'Por favor, selecione um veículo.')
             context = {
                 'checklist': checklist,
-                'itens_personalizados': checklist.itens_personalizados.filter(ativo=True).order_by('categoria__ordem', 'ordem'),
+                'itens_personalizados': checklist.itens_personalizados.filter(ativo=True).order_by('ordem'),
                 'veiculos': Veiculo.objects.all().order_by('marca', 'modelo'),
             }
             return render(request, 'checklist/executar.html', context)
@@ -771,15 +816,19 @@ def checklist_executar(request, checklist_id):
             checklist=checklist,
             veiculo=veiculo,
             usuario=request.user,
-            observacoes=observacoes
+            observacoes=observacoes,
+            created_by=request.user,
+            updated_by=request.user
         )
         
         # Criar itens executados baseados nos itens personalizados
         for item_personalizado in checklist.itens_personalizados.filter(ativo=True):
             ItemChecklistExecutado.objects.create(
                 checklist_executado=checklist_executado,
-                item_checklist=item_personalizado.item_padrao or item_personalizado,
-                resultado='pendente'
+                item_checklist=item_personalizado,
+                resultado='pendente',
+                created_by=request.user,
+                updated_by=request.user
             )
         
         messages.success(request, 'Checklist iniciado com sucesso!')
@@ -787,7 +836,7 @@ def checklist_executar(request, checklist_id):
     
     context = {
         'checklist': checklist,
-        'itens_personalizados': checklist.itens_personalizados.filter(ativo=True).order_by('categoria__ordem', 'ordem'),
+        'itens_personalizados': checklist.itens_personalizados.filter(ativo=True).order_by('ordem'),
         'veiculos': Veiculo.objects.all().order_by('marca', 'modelo'),
     }
     return render(request, 'checklist/executar.html', context)
@@ -816,7 +865,7 @@ def checklist_executar_detalhes(request, checklist_executado_id):
     
     if request.method == 'POST':
         # Atualizar itens executados
-        for item_executado in checklist_executado.itens_checklist_executado.all():
+        for item_executado in checklist_executado.itens_executados.all():
             item_id = str(item_executado.id)
             checked = request.POST.get(f'checked_{item_id}') == 'on'
             resultado = request.POST.get(f'resultado_{item_id}', 'pendente')
@@ -840,7 +889,7 @@ def checklist_executar_detalhes(request, checklist_executado_id):
     
     context = {
         'checklist_executado': checklist_executado,
-        'itens_executados': checklist_executado.itens_checklist_executado.all().order_by('item_checklist__categoria__ordem', 'item_checklist__ordem'),
+        'itens_executados': checklist_executado.itens_executados.all().order_by('item_checklist__ordem'),
     }
     return render(request, 'checklist/executar_detalhes.html', context)
 
@@ -881,3 +930,151 @@ def checklist_relatorios(request):
         'executados_recentes': executados.order_by('-data_execucao')[:10],
     }
     return render(request, 'checklist/relatorios.html', context)
+
+def view_checklist_data(request):
+    """View temporária para visualizar os dados de checklist populados"""
+    categorias = CategoriaChecklist.objects.filter(ativo=True).order_by('ordem')
+    total_categorias = categorias.count()
+    total_itens = ItemChecklist.objects.filter(ativo=True).count()
+    
+    # Preparar dados para o template
+    categorias_data = []
+    for categoria in categorias:
+        itens = categoria.itens.filter(ativo=True).order_by('ordem')
+        categorias_data.append({
+            'categoria': categoria,
+            'itens': itens,
+            'total_itens': itens.count()
+        })
+    
+    context = {
+        'total_categorias': total_categorias,
+        'total_itens': total_itens,
+        'categorias_data': categorias_data
+    }
+    
+    return render(request, 'checklist/dados_populados.html', context)
+
+@login_required
+@oficina_required
+def checklist_adicionar_item(request, checklist_id):
+    """Adicionar item personalizado ao checklist"""
+    checklist = get_object_or_404(Checklist, id=checklist_id)
+    
+    # Verificar permissões
+    try:
+        oficina = request.user.oficina
+        if not oficina or checklist.oficina != oficina:
+            messages.error(request, 'Você não tem permissão para editar este checklist.')
+            return redirect('checklist_lista')
+    except:
+        messages.error(request, 'Você não possui uma oficina associada.')
+        return redirect('checklist_lista')
+    
+    if request.method == 'POST':
+        categoria_id = request.POST.get('categoria')
+        item_padrao_id = request.POST.get('item_padrao')
+        nome_personalizado = request.POST.get('nome_personalizado')
+        descricao_personalizada = request.POST.get('descricao_personalizada')
+        obrigatorio = request.POST.get('obrigatorio') == 'on'
+        
+        if categoria_id and (item_padrao_id or nome_personalizado):
+            categoria = get_object_or_404(CategoriaChecklist, id=categoria_id)
+            
+            # Determinar a próxima ordem
+            ultima_ordem = ItemChecklistPersonalizado.objects.filter(
+                checklist=checklist,
+                categoria=categoria
+            ).aggregate(max_ordem=Sum('ordem'))['max_ordem'] or 0
+            
+            item_personalizado = ItemChecklistPersonalizado.objects.create(
+                checklist=checklist,
+                categoria=categoria,
+                item_padrao_id=item_padrao_id if item_padrao_id else None,
+                nome_personalizado=nome_personalizado,
+                descricao_personalizada=descricao_personalizada,
+                obrigatorio=obrigatorio,
+                ordem=ultima_ordem + 1,
+                created_by=request.user,
+                updated_by=request.user
+            )
+            
+            messages.success(request, 'Item adicionado ao checklist com sucesso!')
+            return redirect('checklist_detalhes', checklist_id=checklist.id)
+        else:
+            messages.error(request, 'Por favor, preencha todos os campos obrigatórios.')
+    
+    context = {
+        'checklist': checklist,
+        'categorias': CategoriaChecklist.objects.filter(ativo=True).order_by('ordem'),
+        'itens_padrao': ItemChecklist.objects.filter(ativo=True).order_by('categoria__ordem', 'ordem'),
+    }
+    
+    return render(request, 'checklist/adicionar_item.html', context)
+
+@login_required
+@oficina_required
+def checklist_gerenciar(request):
+    """Página de gerenciamento avançado de checklists para oficinas"""
+    try:
+        oficina = request.user.oficina
+        if not oficina:
+            messages.error(request, 'Você não possui uma oficina associada.')
+            return redirect('checklist_lista')
+    except:
+        messages.error(request, 'Você não possui uma oficina associada.')
+        return redirect('checklist_lista')
+    
+    # Filtros
+    tipo_veiculo_id = request.GET.get('tipo_veiculo')
+    status = request.GET.get('status')
+    busca = request.GET.get('busca')
+    
+    # Query base
+    checklists = Checklist.objects.filter(oficina=oficina)
+    
+    # Aplicar filtros
+    if tipo_veiculo_id:
+        checklists = checklists.filter(tipo_veiculo_id=tipo_veiculo_id)
+    
+    if status == 'ativo':
+        checklists = checklists.filter(ativo=True)
+    elif status == 'inativo':
+        checklists = checklists.filter(ativo=False)
+    
+    if busca:
+        checklists = checklists.filter(
+            Q(nome__icontains=busca) | 
+            Q(descricao__icontains=busca) |
+            Q(tipo_veiculo__nome__icontains=busca)
+        )
+    
+    # Ordenar
+    checklists = checklists.select_related('tipo_veiculo').prefetch_related(
+        'itens_personalizados', 'checklist_executado'
+    ).order_by('-data_criacao')
+    
+    # Estatísticas
+    from datetime import datetime, timedelta
+    hoje = datetime.now()
+    inicio_mes = hoje.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    stats = {
+        'total_checklists': Checklist.objects.filter(oficina=oficina).count(),
+        'checklists_ativos': Checklist.objects.filter(oficina=oficina, ativo=True).count(),
+        'execucoes_mes': ChecklistExecutado.objects.filter(
+            checklist__oficina=oficina,
+            data_execucao__gte=inicio_mes
+        ).count(),
+        'tipos_veiculos': TipoVeiculo.objects.filter(
+            checklists__oficina=oficina
+        ).distinct().count(),
+    }
+    
+    context = {
+        'checklists': checklists,
+        'tipos_veiculos': TipoVeiculo.objects.filter(ativo=True),
+        'stats': stats,
+    }
+    
+    return render(request, 'checklist/gerenciar.html', context)

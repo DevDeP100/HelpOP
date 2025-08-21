@@ -31,9 +31,9 @@ SECRET_KEY = env('SECRET_KEY', default='django-insecure-iniu!(@p@vk^eiabp*ydv*cn
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True  # Forçar True para desenvolvimento
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', '0.0.0.0', '*'])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', '0.0.0.0', '*', 'dev.helpop.com.br'])
 
-CSRF_TRUSTED_ORIGINS = env.list('DJANGO_CSRF_TRUSTED_ORIGINS', default=['https://*.railway.app', 'http://localhost:8000', 'http://127.0.0.1:8000'])
+CSRF_TRUSTED_ORIGINS = env.list('DJANGO_CSRF_TRUSTED_ORIGINS', default=['https://*.railway.app', 'http://localhost:8000', 'http://127.0.0.1:8000', 'http://localhost:8001', 'http://127.0.0.1:8001'])
 
 # Configuração do banco de dados para PostgreSQL
 if env('DATABASE_URL', default=None):
@@ -88,6 +88,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'core.middleware.EmailVerificationMiddleware',  # Middleware de verificação de email
 ]
 
 # Configuração para produção
@@ -181,6 +182,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
+
+# Message tags configuration
+from django.contrib.messages import constants as messages
+MESSAGE_TAGS = {
+    messages.DEBUG: 'debug',
+    messages.INFO: 'info',
+    messages.SUCCESS: 'success',
+    messages.WARNING: 'warning',
+    messages.ERROR: 'danger',
+}
 
 
 # core/email_backend.py

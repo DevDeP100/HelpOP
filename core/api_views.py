@@ -8,7 +8,7 @@ from drf_yasg import openapi
 from .models import (
     Usuario, Veiculo, Oficina, Profissional, Servico, Manutencao, Avaliacao,
     TipoVeiculo, CategoriaChecklist, ItemChecklist, Checklist, ItemChecklistPersonalizado,
-    ChecklistExecutado, ItemChecklistExecutado, Arquivos_checklist
+    ChecklistExecutado, ItemChecklistExecutado, Arquivos_checklist, usuarioOficina
 )
 from .serializers import (
     UsuarioSerializer, VeiculoSerializer, OficinaSerializer, ProfissionalSerializer,
@@ -16,7 +16,8 @@ from .serializers import (
     TipoVeiculoSerializer, CategoriaChecklistSerializer, ItemChecklistSerializer,
     ChecklistSerializer, ItemChecklistPersonalizadoSerializer, ChecklistExecutadoSerializer,
     ItemChecklistExecutadoSerializer, ArquivosChecklistSerializer,
-    ChecklistDetalhadoSerializer, ChecklistExecutadoDetalhadoSerializer
+    ChecklistDetalhadoSerializer, ChecklistExecutadoDetalhadoSerializer,
+    UsuarioOficinaSerializer
 )
 
 # Permissões personalizadas
@@ -188,7 +189,7 @@ class ItemChecklistViewSet(viewsets.ModelViewSet):
     Permite criar, listar, atualizar e deletar itens de checklist.
     Retorna apenas itens ativos, ordenados por categoria e ordem.
     """
-    queryset = ItemChecklist.objects.filter(ativo=True).order_by('categoria__ordem', 'ordem')
+    queryset = ItemChecklist.objects.filter(ativo=True).order_by('ordem')
     serializer_class = ItemChecklistSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -339,3 +340,76 @@ class ArquivosChecklistViewSet(viewsets.ModelViewSet):
             return Arquivos_checklist.objects.filter(item_checklist_executado__checklist_executado__checklist__oficina=profissional.oficina)
         else:
             return Arquivos_checklist.objects.all() 
+
+class UsuarioOficinaViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para gerenciar relacionamentos entre usuários e oficinas.
+    
+    Permite criar, listar, atualizar e deletar relacionamentos usuário-oficina.
+    Usuários veem apenas seus próprios relacionamentos.
+    Administradores veem todos os relacionamentos.
+    """
+    serializer_class = UsuarioOficinaSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return usuarioOficina.objects.all()
+        elif self.request.user.is_oficina:
+            try:
+                oficina = self.request.user.oficina
+                if oficina:
+                    # Usuário tem oficina direta - pode ver relacionamentos da sua oficina
+                    return usuarioOficina.objects.filter(oficina=oficina)
+                else:
+                    # Usuário é oficina mas não tem oficina direta - pode ver seus próprios relacionamentos
+                    return usuarioOficina.objects.filter(usuario=self.request.user)
+            except:
+                # Usuário é oficina mas não tem oficina direta - pode ver seus próprios relacionamentos
+                return usuarioOficina.objects.filter(usuario=self.request.user)
+        else:
+            return usuarioOficina.objects.filter(usuario=self.request.user)
+    
+    @swagger_auto_schema(
+        operation_description="Retorna relacionamentos usuário-oficina ativos",
+        responses={
+            200: UsuarioOficinaSerializer(many=True),
+            401: 'Não autorizado',
+        }
+    )
+    @action(detail=False, methods=['get'])
+    def ativos(self, request):
+        """Retorna apenas relacionamentos ativos"""
+        queryset = self.get_queryset().filter(ativo=True)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+    
+    @swagger_auto_schema(
+        operation_description="Retorna relacionamentos por oficina específica",
+        manual_parameters=[
+            openapi.Parameter(
+                'oficina_id',
+                openapi.IN_QUERY,
+                description="ID da oficina",
+                type=openapi.TYPE_INTEGER,
+                required=True
+            )
+        ],
+        responses={
+            200: UsuarioOficinaSerializer(many=True),
+            400: 'ID da oficina não fornecido',
+        }
+    )
+    @action(detail=False, methods=['get'])
+    def por_oficina(self, request):
+        """Retorna relacionamentos por oficina específica"""
+        oficina_id = request.query_params.get('oficina_id')
+        if not oficina_id:
+            return Response(
+                {'error': 'ID da oficina é obrigatório'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        queryset = self.get_queryset().filter(oficina_id=oficina_id)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data) 

@@ -1,0 +1,495 @@
+{% extends 'base.html' %}
+
+{% block title %}Gerenciar Checklists - HelpOP{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header com estatísticas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-warning mb-0">
+                    <i class="fas fa-cogs me-2"></i>Gerenciar Checklists
+                </h2>
+                <div>
+                    <a href="{% url 'checklist_criar' %}" class="btn btn-primary me-2">
+                        <i class="fas fa-plus me-2"></i>Novo Checklist
+                    </a>
+                    <a href="{% url 'view_checklist_data' %}" class="btn btn-outline-info me-2">
+                        <i class="fas fa-database me-2"></i>Ver Dados Base
+                    </a>
+                    <a href="{% url 'checklist_lista' %}" class="btn btn-outline-warning">
+                        <i class="fas fa-list me-2"></i>Lista Simples
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                <div class="card-body text-center">
+                    <i class="fas fa-clipboard-check fa-2x mb-2"></i>
+                    <h4>{{ stats.total_checklists }}</h4>
+                    <p class="mb-0">Total de Checklists</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white" style="background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%); color: #000 !important;">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                    <h4>{{ stats.checklists_ativos }}</h4>
+                    <p class="mb-0">Checklists Ativos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);">
+                <div class="card-body text-center">
+                    <i class="fas fa-play-circle fa-2x mb-2"></i>
+                    <h4>{{ stats.execucoes_mes }}</h4>
+                    <p class="mb-0">Execuções este Mês</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white" style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);">
+                <div class="card-body text-center">
+                    <i class="fas fa-car fa-2x mb-2"></i>
+                    <h4>{{ stats.tipos_veiculos }}</h4>
+                    <p class="mb-0">Tipos de Veículos</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros e Controles -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="mb-0 text-warning">
+                        <i class="fas fa-filter me-2"></i>Filtros e Controles
+                    </h5>
+                </div>
+                <div class="col-auto">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-warning btn-sm" id="viewGrid" title="Visualização em Grade">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-warning btn-sm active" id="viewTable" title="Visualização em Tabela">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <form method="get" id="filterForm">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="tipo_veiculo" class="form-label text-warning">Tipo de Veículo</label>
+                        <select class="form-control" id="tipo_veiculo" name="tipo_veiculo">
+                            <option value="">Todos os tipos</option>
+                            {% for tipo in tipos_veiculos %}
+                                <option value="{{ tipo.id }}" {% if request.GET.tipo_veiculo == tipo.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ tipo.nome }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="status" class="form-label text-warning">Status</label>
+                        <select class="form-control" id="status" name="status">
+                            <option value="">Todos</option>
+                            <option value="ativo" {% if request.GET.status == 'ativo' %}selected{% endif %}>Ativo</option>
+                            <option value="inativo" {% if request.GET.status == 'inativo' %}selected{% endif %}>Inativo</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="busca" class="form-label text-warning">Buscar</label>
+                        <input type="text" class="form-control" id="busca" name="busca" 
+                               value="{{ request.GET.busca }}" placeholder="Nome do checklist...">
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search me-1"></i>Filtrar
+                        </button>
+                        <a href="{% url 'checklist_gerenciar' %}" class="btn btn-outline-warning">
+                            <i class="fas fa-times me-1"></i>Limpar
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Ações em Lote -->
+    <div class="card mb-4" id="batchActions" style="display: none;">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col">
+                    <span class="text-warning"><span id="selectedCount">0</span> checklist(s) selecionado(s)</span>
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="btn btn-success btn-sm me-2" onclick="batchAction('ativar')">
+                        <i class="fas fa-check me-1"></i>Ativar
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm me-2" onclick="batchAction('desativar')">
+                        <i class="fas fa-pause me-1"></i>Desativar
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="batchAction('excluir')">
+                        <i class="fas fa-trash me-1"></i>Excluir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visualização em Tabela -->
+    <div id="tableView">
+        {% if checklists %}
+            <div class="card">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="mb-0 text-warning">
+                                <i class="fas fa-table me-2"></i>Lista de Checklists ({{ checklists|length }})
+                            </h5>
+                        </div>
+                        <div class="col-auto">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="selectAll">
+                                <label class="form-check-label text-warning" for="selectAll">
+                                    Selecionar Todos
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th width="50"></th>
+                                    <th>Nome</th>
+                                    <th>Tipo de Veículo</th>
+                                    <th>Status</th>
+                                    <th>Itens</th>
+                                    <th>Execuções</th>
+                                    <th>Criado em</th>
+                                    <th width="200">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for checklist in checklists %}
+                                    <tr>
+                                        <td>
+                                            <div class="form-check">
+                                                <input class="form-check-input checklist-checkbox" type="checkbox" 
+                                                       value="{{ checklist.id }}" id="check{{ checklist.id }}">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <strong class="text-warning">{{ checklist.nome }}</strong>
+                                                {% if checklist.descricao %}
+                                                    <br><small class="text-muted">{{ checklist.descricao|truncatewords:10 }}</small>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ checklist.tipo_veiculo.nome }}</span>
+                                        </td>
+                                        <td>
+                                            {% if checklist.ativo %}
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check me-1"></i>Ativo
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-pause me-1"></i>Inativo
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary">{{ checklist.itens_personalizados.count }} itens</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-warning text-dark">{{ checklist.checklist_executado.count }} execuções</span>
+                                        </td>
+                                        <td>
+                                            <small class="text-light">{{ checklist.data_criacao|date:"d/m/Y" }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{% url 'checklist_detalhes' checklist.id %}" 
+                                                   class="btn btn-outline-info btn-sm" title="Ver Detalhes">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{% url 'checklist_executar' checklist.id %}" 
+                                                   class="btn btn-primary btn-sm" title="Executar">
+                                                    <i class="fas fa-play"></i>
+                                                </a>
+                                                <a href="{% url 'checklist_editar' checklist.id %}" 
+                                                   class="btn btn-outline-warning btn-sm" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                        onclick="toggleChecklistStatus(this)" 
+                                                        data-checklist-id="{{ checklist.id }}"
+                                                        data-status="{{ checklist.ativo|yesno:'true,false' }}"
+                                                        title="{% if checklist.ativo %}Desativar{% else %}Ativar{% endif %}">
+                                                    {% if checklist.ativo %}
+                                                        <i class="fas fa-pause"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-play"></i>
+                                                    {% endif %}
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-clipboard-check" style="font-size: 4rem; color: var(--primary-yellow); opacity: 0.5;"></i>
+                <h4 class="text-warning mt-3">Nenhum checklist encontrado</h4>
+                <p class="text-light mb-4">Comece criando seu primeiro checklist para organizar as verificações.</p>
+                <a href="{% url 'checklist_criar' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>Criar Primeiro Checklist
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Visualização em Grade -->
+    <div id="gridView" style="display: none;">
+        {% if checklists %}
+            <div class="row">
+                {% for checklist in checklists %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100 checklist-card" data-id="{{ checklist.id }}">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input checklist-checkbox" type="checkbox" 
+                                               value="{{ checklist.id }}" id="gridCheck{{ checklist.id }}">
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-clipboard-check" style="font-size: 2rem; color: var(--primary-yellow);"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h5 class="card-title text-warning mb-1">{{ checklist.nome }}</h5>
+                                        <p class="text-muted mb-0">{{ checklist.tipo_veiculo.nome }}</p>
+                                    </div>
+                                </div>
+                                
+                                {% if checklist.descricao %}
+                                    <p class="card-text text-light">{{ checklist.descricao|truncatewords:15 }}</p>
+                                {% endif %}
+                                
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <small class="text-muted">Itens:</small><br>
+                                        <span class="badge bg-primary">{{ checklist.itens_personalizados.count }}</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Execuções:</small><br>
+                                        <span class="badge bg-warning text-dark">{{ checklist.checklist_executado.count }}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    {% if checklist.ativo %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>Ativo
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-pause me-1"></i>Inativo
+                                        </span>
+                                    {% endif %}
+                                    
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'checklist_detalhes' checklist.id %}" class="btn btn-outline-warning btn-sm">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'checklist_executar' checklist.id %}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-play"></i>
+                                        </a>
+                                        <a href="{% url 'checklist_editar' checklist.id %}" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal de Confirmação -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-warning">
+                <h5 class="modal-title text-warning">Confirmar Ação</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-light">
+                <p id="confirmMessage"></p>
+            </div>
+            <div class="modal-footer border-warning">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmAction">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Adicionar classe auth-pages ao body
+document.body.classList.add('auth-pages');
+
+// Controle de visualização
+document.getElementById('viewGrid').addEventListener('click', function() {
+    document.getElementById('tableView').style.display = 'none';
+    document.getElementById('gridView').style.display = 'block';
+    this.classList.add('active');
+    document.getElementById('viewTable').classList.remove('active');
+});
+
+document.getElementById('viewTable').addEventListener('click', function() {
+    document.getElementById('gridView').style.display = 'none';
+    document.getElementById('tableView').style.display = 'block';
+    this.classList.add('active');
+    document.getElementById('viewGrid').classList.remove('active');
+});
+
+// Seleção de checkboxes
+document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.checklist-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+    });
+    updateBatchActions();
+});
+
+// Atualizar ações em lote
+function updateBatchActions() {
+    const selectedCheckboxes = document.querySelectorAll('.checklist-checkbox:checked');
+    const count = selectedCheckboxes.length;
+    
+    document.getElementById('selectedCount').textContent = count;
+    document.getElementById('batchActions').style.display = count > 0 ? 'block' : 'none';
+}
+
+// Event listeners para checkboxes individuais
+document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('checklist-checkbox')) {
+        updateBatchActions();
+        
+        // Atualizar estado do "Selecionar Todos"
+        const allCheckboxes = document.querySelectorAll('.checklist-checkbox');
+        const checkedCheckboxes = document.querySelectorAll('.checklist-checkbox:checked');
+        const selectAllCheckbox = document.getElementById('selectAll');
+        
+        if (checkedCheckboxes.length === 0) {
+            selectAllCheckbox.indeterminate = false;
+            selectAllCheckbox.checked = false;
+        } else if (checkedCheckboxes.length === allCheckboxes.length) {
+            selectAllCheckbox.indeterminate = false;
+            selectAllCheckbox.checked = true;
+        } else {
+            selectAllCheckbox.indeterminate = true;
+        }
+    }
+});
+
+// Ações em lote
+function batchAction(action) {
+    const selectedCheckboxes = document.querySelectorAll('.checklist-checkbox:checked');
+    const ids = Array.from(selectedCheckboxes).map(cb => cb.value);
+    
+    if (ids.length === 0) {
+        alert('Selecione pelo menos um checklist.');
+        return;
+    }
+    
+    let message = '';
+    let actionText = '';
+    
+    switch(action) {
+        case 'ativar':
+            message = `Deseja ativar ${ids.length} checklist(s) selecionado(s)?`;
+            actionText = 'Ativar';
+            break;
+        case 'desativar':
+            message = `Deseja desativar ${ids.length} checklist(s) selecionado(s)?`;
+            actionText = 'Desativar';
+            break;
+        case 'excluir':
+            message = `Deseja excluir ${ids.length} checklist(s) selecionado(s)? Esta ação não pode ser desfeita.`;
+            actionText = 'Excluir';
+            break;
+    }
+    
+    document.getElementById('confirmMessage').textContent = message;
+    document.getElementById('confirmAction').textContent = actionText;
+    document.getElementById('confirmAction').onclick = () => executeBatchAction(action, ids);
+    
+    new bootstrap.Modal(document.getElementById('confirmModal')).show();
+}
+
+// Executar ação em lote
+function executeBatchAction(action, ids) {
+    // Aqui você implementaria a chamada AJAX para o backend
+    console.log(`Executando ${action} para IDs:`, ids);
+    
+    // Fechar modal
+    bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+    
+    // Recarregar página (ou atualizar via AJAX)
+    location.reload();
+}
+
+// Toggle status individual
+function toggleChecklistStatus(button) {
+    const checklistId = button.getAttribute('data-checklist-id');
+    const currentStatus = button.getAttribute('data-status') === 'true';
+    const newStatus = !currentStatus;
+    const action = newStatus ? 'ativar' : 'desativar';
+    const message = `Deseja ${action} este checklist?`;
+    
+    document.getElementById('confirmMessage').textContent = message;
+    document.getElementById('confirmAction').textContent = newStatus ? 'Ativar' : 'Desativar';
+    document.getElementById('confirmAction').onclick = () => {
+        // Implementar chamada AJAX
+        console.log(`${action} checklist ID:`, checklistId);
+        bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+        location.reload();
+    };
+    
+    new bootstrap.Modal(document.getElementById('confirmModal')).show();
+}
+
+// Filtro automático
+document.getElementById('busca').addEventListener('input', function() {
+    // Implementar filtro em tempo real se necessário
+});
+</script>
+{% endblock %}
