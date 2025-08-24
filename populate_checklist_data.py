@@ -304,7 +304,7 @@ def populate_checklist_data():
                 ItemChecklist.objects.create(
                     categoria=categoria,
                     nome=item_nome,
-                    descricao=f"Verificação: {item_nome}",
+                    descricao=item_nome,
                     ordem=ordem,
                     obrigatorio=True,
                     ativo=True,

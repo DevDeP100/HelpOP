@@ -11,10 +11,16 @@ from django.db.models import Sum, Count, Q, Avg, Max
 from django.utils import timezone
 from datetime import datetime, timedelta
 import json
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.units import inch
+from io import BytesIO
 from .models import (
     Usuario, Veiculo, Manutencao, Profissional, Servico,
     TipoVeiculo, CategoriaChecklist, ItemChecklist, Checklist, 
-    ItemChecklistPersonalizado, ChecklistExecutado, ItemChecklistExecutado, Arquivos_checklist
+    ItemChecklistPersonalizado, ChecklistExecutado, ItemChecklistExecutado, Arquivos_checklist, UsuarioOficina
 )
 from .forms import UsuarioForm, VeiculoForm, ManutencaoForm
 from .email_utils import enviar_codigo_verificacao, verificar_codigo
@@ -628,15 +634,19 @@ def profissional_editar_manutencao(request, manutencao_id):
 @login_required
 def checklist_lista(request):
     """Lista todos os checklists disponíveis"""
+   
     if request.user.is_oficina:
         # Oficinas veem seus próprios checklists
         try:
-            oficina = request.user.oficina
+            oficina = UsuarioOficina.objects.get(usuario=request.user)
             if oficina:
-                checklists = Checklist.objects.filter(oficina=oficina)
+                checklists = Checklist.objects.filter(oficina=oficina.oficina)
             else:
                 checklists = Checklist.objects.none()
-        except:
+        except Exception as e:
+            print(50*'=')
+            print('Erro: ', e)
+            print(50*'=')
             checklists = Checklist.objects.none()
     elif request.user.is_profissional:
         # Profissionais veem checklists das oficinas onde trabalham
@@ -655,36 +665,52 @@ def checklist_lista(request):
 @login_required
 @oficina_required
 def checklist_criar(request):
-    """Criar novo checklist"""
     if request.method == 'POST':
-        # Lógica para criar checklist
         nome = request.POST.get('nome')
-        tipo_veiculo_id = request.POST.get('tipo_veiculo')
         descricao = request.POST.get('descricao', '')
-
-        print(50*'=')
-        print('Inicio da criação do checklist')
-        print(50*'=')
+        tipo_veiculo_id = request.POST.get('tipo_veiculo')
         
         if nome and tipo_veiculo_id:
             tipo_veiculo = get_object_or_404(TipoVeiculo, id=tipo_veiculo_id)
             
-            print(50*'=')
-            print('Tipo de veículo: ', tipo_veiculo)
-            print(50*'=')
-            # Pegar a oficina diretamente do usuário logado
+            # Pegar a oficina através da tabela UsuarioOficina
             try:
-                oficina = request.user.oficina
-                print(50*'=')
-                print('Oficina: ', oficina)
-                print(50*'=')
+                oficina_rel = UsuarioOficina.objects.get(usuario=request.user)
+                oficina = oficina_rel.oficina
+                
                 if not oficina:
                     messages.error(request, 'Você não possui uma oficina associada. Entre em contato com o administrador.')
                     return redirect('checklist_lista')
-            except:
+                    
+                # Verificar se já existe um checklist para esta oficina e tipo de veículo
+                checklist_existente = Checklist.objects.filter(
+                    oficina=oficina,
+                    tipo_veiculo=tipo_veiculo
+                ).first()
+                
+                if checklist_existente:
+                    messages.error(
+                        request, 
+                        f'Já existe um checklist para o tipo de veículo "{tipo_veiculo.nome}" '
+                        f'nesta oficina: "{checklist_existente.nome}". '
+                        f'Cada oficina pode ter apenas um checklist por tipo de veículo.'
+                    )
+                    context = {
+                        'tipos_veiculos': TipoVeiculo.objects.filter(ativo=True),
+                        'categorias': CategoriaChecklist.objects.filter(ativo=True).order_by('ordem'),
+                        'form_data': {
+                            'nome': nome,
+                            'descricao': descricao,
+                            'tipo_veiculo': tipo_veiculo_id
+                        }
+                    }
+                    return render(request, 'checklist/criar.html', context)
+                
+            except UsuarioOficina.DoesNotExist:
                 messages.error(request, 'Você não possui uma oficina associada. Entre em contato com o administrador.')
                 return redirect('checklist_lista')
             
+            # Se chegou até aqui, pode criar o checklist
             checklist = Checklist.objects.create(
                 oficina=oficina,
                 tipo_veiculo=tipo_veiculo,
@@ -694,7 +720,6 @@ def checklist_criar(request):
                 updated_by=request.user
             )
             
-            print(checklist)
             messages.success(request, f'Checklist "{nome}" criado com sucesso!')
             return redirect('checklist_detalhes', checklist_id=checklist.id)
         else:
@@ -715,8 +740,8 @@ def checklist_detalhes(request, checklist_id):
     if not request.user.is_staff:
         if request.user.is_oficina:
             try:
-                oficina = request.user.oficina
-                if not oficina or checklist.oficina != oficina:
+                oficina = UsuarioOficina.objects.get(usuario=request.user)
+                if not oficina or checklist.oficina != oficina.oficina:
                     messages.error(request, 'Você não tem permissão para acessar este checklist.')
                     return redirect('checklist_lista')
             except:
@@ -728,12 +753,148 @@ def checklist_detalhes(request, checklist_id):
                 messages.error(request, 'Você não tem permissão para acessar este checklist.')
                 return redirect('checklist_lista')
     
+    # Filtros para execuções
+    execucoes_query = checklist.checklist_executado.all().order_by('-data_execucao')
+    
+    # Aplicar filtros
+    data_inicio = request.GET.get('data_inicio')
+    data_fim = request.GET.get('data_fim')
+    veiculo_id = request.GET.get('veiculo')
+    usuario_id = request.GET.get('usuario')
+    status = request.GET.get('status')
+    
+    if data_inicio:
+        try:
+            data_inicio_parsed = datetime.strptime(data_inicio, '%Y-%m-%d')
+            execucoes_query = execucoes_query.filter(data_execucao__date__gte=data_inicio_parsed.date())
+        except ValueError:
+            pass
+    
+    if data_fim:
+        try:
+            data_fim_parsed = datetime.strptime(data_fim, '%Y-%m-%d')
+            execucoes_query = execucoes_query.filter(data_execucao__date__lte=data_fim_parsed.date())
+        except ValueError:
+            pass
+    
+    if veiculo_id:
+        execucoes_query = execucoes_query.filter(veiculo_id=veiculo_id)
+    
+    if usuario_id:
+        execucoes_query = execucoes_query.filter(usuario_id=usuario_id)
+    
+    if status:
+        execucoes_query = execucoes_query.filter(status=status)
+    
+    # Paginação
+    paginator = Paginator(execucoes_query, 20)  # 20 registros por página
+    page_number = request.GET.get('page')
+    execucoes = paginator.get_page(page_number)
+    
+    # Dados para os filtros
+    veiculos_execucoes = checklist.checklist_executado.values_list('veiculo', flat=True).distinct()
+    veiculos_filtro = Veiculo.objects.filter(id__in=veiculos_execucoes).order_by('marca', 'modelo')
+    
+    usuarios_execucoes = checklist.checklist_executado.values_list('usuario', flat=True).distinct()
+    usuarios_filtro = Usuario.objects.filter(id__in=usuarios_execucoes).order_by('first_name', 'last_name', 'username')
+    
     context = {
         'checklist': checklist,
         'itens_personalizados': checklist.itens_personalizados.filter(ativo=True).order_by('ordem'),
-        'execucoes': checklist.checklist_executado.all().order_by('-data_execucao')[:5],
+        'execucoes': execucoes,
+        'veiculos_filtro': veiculos_filtro,
+        'usuarios_filtro': usuarios_filtro,
+        'filtros': {
+            'data_inicio': data_inicio,
+            'data_fim': data_fim,
+            'veiculo': veiculo_id,
+            'usuario': usuario_id,
+            'status': status,
+        }
     }
     return render(request, 'checklist/detalhes.html', context)
+
+@login_required
+def checklist_gerenciar_execucoes(request, checklist_id):
+    """Gerenciar execuções de um checklist específico"""
+    checklist = get_object_or_404(Checklist, id=checklist_id)
+    
+    # Verificar permissões
+    if not request.user.is_staff:
+        if request.user.is_oficina:
+            try:
+                oficina = UsuarioOficina.objects.get(usuario=request.user)
+                if not oficina or checklist.oficina != oficina.oficina:
+                    messages.error(request, 'Você não tem permissão para acessar este checklist.')
+                    return redirect('checklist_lista')
+            except:
+                messages.error(request, 'Você não possui uma oficina associada.')
+                return redirect('checklist_lista')
+        elif request.user.is_profissional:
+            profissional = get_object_or_404(Profissional, usuario=request.user)
+            if checklist.oficina != profissional.oficina:
+                messages.error(request, 'Você não tem permissão para acessar este checklist.')
+                return redirect('checklist_lista')
+    
+    # Filtros para execuções
+    execucoes_query = checklist.checklist_executado.all().order_by('-data_execucao')
+    
+    # Aplicar filtros
+    data_inicio = request.GET.get('data_inicio')
+    data_fim = request.GET.get('data_fim')
+    veiculo_id = request.GET.get('veiculo')
+    usuario_id = request.GET.get('usuario')
+    status = request.GET.get('status')
+    
+    if data_inicio:
+        try:
+            data_inicio_parsed = datetime.strptime(data_inicio, '%Y-%m-%d')
+            execucoes_query = execucoes_query.filter(data_execucao__date__gte=data_inicio_parsed.date())
+        except ValueError:
+            pass
+    
+    if data_fim:
+        try:
+            data_fim_parsed = datetime.strptime(data_fim, '%Y-%m-%d')
+            execucoes_query = execucoes_query.filter(data_execucao__date__lte=data_fim_parsed.date())
+        except ValueError:
+            pass
+    
+    if veiculo_id:
+        execucoes_query = execucoes_query.filter(veiculo_id=veiculo_id)
+    
+    if usuario_id:
+        execucoes_query = execucoes_query.filter(usuario_id=usuario_id)
+    
+    if status:
+        execucoes_query = execucoes_query.filter(status=status)
+    
+    # Paginação
+    paginator = Paginator(execucoes_query, 20)  # 20 registros por página
+    page_number = request.GET.get('page')
+    execucoes = paginator.get_page(page_number)
+    
+    # Dados para os filtros
+    veiculos_execucoes = checklist.checklist_executado.values_list('veiculo', flat=True).distinct()
+    veiculos_filtro = Veiculo.objects.filter(id__in=veiculos_execucoes).order_by('marca', 'modelo')
+    
+    usuarios_execucoes = checklist.checklist_executado.values_list('usuario', flat=True).distinct()
+    usuarios_filtro = Usuario.objects.filter(id__in=usuarios_execucoes).order_by('first_name', 'last_name', 'username')
+    
+    context = {
+        'checklist': checklist,
+        'execucoes': execucoes,
+        'veiculos_filtro': veiculos_filtro,
+        'usuarios_filtro': usuarios_filtro,
+        'filtros': {
+            'data_inicio': data_inicio,
+            'data_fim': data_fim,
+            'veiculo': veiculo_id,
+            'usuario': usuario_id,
+            'status': status,
+        }
+    }
+    return render(request, 'checklist/gerenciar_execucoes.html', context)
 
 @login_required
 @oficina_required
@@ -742,14 +903,21 @@ def checklist_editar(request, checklist_id):
     checklist = get_object_or_404(Checklist, id=checklist_id)
     
     # Verificar se o usuário tem permissão para editar
-    try:
-        oficina = request.user.oficina
-        if not oficina or checklist.oficina != oficina:
-            messages.error(request, 'Você não tem permissão para editar este checklist.')
-            return redirect('checklist_lista')
-    except:
-        messages.error(request, 'Você não possui uma oficina associada.')
-        return redirect('checklist_lista')
+    if not request.user.is_staff:
+        if request.user.is_oficina:
+            try:
+                oficina = UsuarioOficina.objects.get(usuario=request.user)
+                if not oficina or checklist.oficina != oficina.oficina:
+                    messages.error(request, 'Você não tem permissão para editar este checklist.')
+                    return redirect('checklist_lista')
+            except:
+                messages.error(request, 'Você não possui uma oficina associada.')
+                return redirect('checklist_lista')
+        elif request.user.is_profissional:
+            profissional = get_object_or_404(Profissional, usuario=request.user)
+            if checklist.oficina != profissional.oficina:
+                messages.error(request, 'Você não tem permissão para editar este checklist.')
+                return redirect('checklist_lista')
     
     if request.method == 'POST':
         nome = request.POST.get('nome')
@@ -783,8 +951,8 @@ def checklist_executar(request, checklist_id):
     if not request.user.is_staff:
         if request.user.is_oficina:
             try:
-                oficina = request.user.oficina
-                if not oficina or checklist.oficina != oficina:
+                oficina = UsuarioOficina.objects.get(usuario=request.user)
+                if not oficina or checklist.oficina != oficina.oficina:
                     messages.error(request, 'Você não tem permissão para executar este checklist.')
                     return redirect('checklist_lista')
             except:
@@ -822,21 +990,49 @@ def checklist_executar(request, checklist_id):
         )
         
         # Criar itens executados baseados nos itens personalizados
+        # Verificar se já existem itens executados para evitar duplicação
+        itens_existentes = checklist_executado.itens_executados.values_list('item_checklist_id', flat=True)
+        
         for item_personalizado in checklist.itens_personalizados.filter(ativo=True):
-            ItemChecklistExecutado.objects.create(
-                checklist_executado=checklist_executado,
-                item_checklist=item_personalizado,
-                resultado='pendente',
-                created_by=request.user,
-                updated_by=request.user
-            )
+            if item_personalizado.id not in itens_existentes:
+                ItemChecklistExecutado.objects.create(
+                    checklist_executado=checklist_executado,
+                    item_checklist=item_personalizado,
+                    resultado='4',  # '4' = Pendente
+                    created_by=request.user,
+                    updated_by=request.user
+                )
         
         messages.success(request, 'Checklist iniciado com sucesso!')
         return redirect('checklist_executar_detalhes', checklist_executado_id=checklist_executado.id)
     
+    # Preparar dados para agrupamento por categoria
+    itens_personalizados = checklist.itens_personalizados.filter(ativo=True).order_by('ordem')
+    
+    # Agrupar por categoria do item padrão
+    categorias_agrupadas = {}
+    for item_personalizado in itens_personalizados:
+        try:
+            categoria = item_personalizado.item_padrao.categoria if item_personalizado.item_padrao else None
+            if categoria:
+                if categoria.id not in categorias_agrupadas:
+                    categorias_agrupadas[categoria.id] = {
+                        'categoria': categoria,
+                        'itens': []
+                    }
+                categorias_agrupadas[categoria.id]['itens'].append(item_personalizado)
+        except Exception as e:
+            # Log do erro para debug
+            print(f"Erro ao processar item personalizado {item_personalizado.id}: {e}")
+            continue
+    
+    # Ordenar categorias pela ordem
+    categorias_ordenadas = sorted(categorias_agrupadas.values(), key=lambda x: x['categoria'].ordem) if categorias_agrupadas else []
+    
     context = {
         'checklist': checklist,
-        'itens_personalizados': checklist.itens_personalizados.filter(ativo=True).order_by('ordem'),
+        'itens_personalizados': itens_personalizados,
+        'categorias_agrupadas': categorias_ordenadas,
         'veiculos': Veiculo.objects.all().order_by('marca', 'modelo'),
     }
     return render(request, 'checklist/executar.html', context)
@@ -850,8 +1046,8 @@ def checklist_executar_detalhes(request, checklist_executado_id):
     if not request.user.is_staff:
         if request.user.is_oficina:
             try:
-                oficina = request.user.oficina
-                if not oficina or checklist_executado.checklist.oficina != oficina:
+                oficina = UsuarioOficina.objects.get(usuario=request.user)
+                if not oficina or checklist_executado.checklist.oficina != oficina.oficina:
                     messages.error(request, 'Você não tem permissão para acessar esta execução.')
                     return redirect('checklist_lista')
             except:
@@ -868,7 +1064,7 @@ def checklist_executar_detalhes(request, checklist_executado_id):
         for item_executado in checklist_executado.itens_executados.all():
             item_id = str(item_executado.id)
             checked = request.POST.get(f'checked_{item_id}') == 'on'
-            resultado = request.POST.get(f'resultado_{item_id}', 'pendente')
+            resultado = request.POST.get(f'resultado_{item_id}', '4')  # '4' = Pendente
             observacoes = request.POST.get(f'observacoes_{item_id}', '')
             
             item_executado.checked = checked
@@ -876,9 +1072,26 @@ def checklist_executar_detalhes(request, checklist_executado_id):
             item_executado.observacoes = observacoes
             item_executado.save()
         
-        # Atualizar status do checklist
+        # Atualizar status do checklist com validação rigorosa
         status = request.POST.get('status', 'pendente')
         observacoes_gerais = request.POST.get('observacoes_gerais', '')
+        
+        # VALIDAÇÃO CRÍTICA: Impedir status "executado" com pendências
+        if status == 'executado':
+            # Contar itens pendentes (resultado '4', vazio ou nulo)
+            itens_pendentes = checklist_executado.itens_executados.filter(
+                Q(resultado='4') | Q(resultado='') | Q(resultado__isnull=True)
+            ).count()
+            
+            if itens_pendentes > 0:
+                messages.error(
+                    request, 
+                    f'ERRO: Não é possível marcar como executado! '
+                    f'Ainda há {itens_pendentes} item(ns) pendente(s) no checklist. '
+                    f'Complete todos os itens antes de finalizar.'
+                )
+                # Forçar status como pendente
+                status = 'pendente'
         
         checklist_executado.status = status
         checklist_executado.observacoes = observacoes_gerais
@@ -887,9 +1100,48 @@ def checklist_executar_detalhes(request, checklist_executado_id):
         messages.success(request, 'Checklist atualizado com sucesso!')
         return redirect('checklist_executar_detalhes', checklist_executado_id=checklist_executado.id)
     
+    # Preparar dados para agrupamento por categoria
+    itens_executados = checklist_executado.itens_executados.select_related(
+        'item_checklist__item_padrao__categoria'
+    ).order_by('item_checklist__ordem')
+    
+    # Debug: verificar se há itens duplicados
+    print(f"Total de itens executados: {itens_executados.count()}")
+    item_ids = list(itens_executados.values_list('id', flat=True))
+    print(f"IDs dos itens: {item_ids}")
+    
+    # Agrupar por categoria do item padrão
+    categorias_agrupadas = {}
+    itens_processados = set()  # Para evitar duplicação
+    
+    for item_executado in itens_executados:
+        try:
+            # Verificar se o item já foi processado
+            if item_executado.id in itens_processados:
+                print(f"Item duplicado encontrado: {item_executado.id}")
+                continue
+                
+            categoria = item_executado.item_checklist.item_padrao.categoria if item_executado.item_checklist.item_padrao else None
+            if categoria:
+                if categoria.id not in categorias_agrupadas:
+                    categorias_agrupadas[categoria.id] = {
+                        'categoria': categoria,
+                        'itens': []
+                    }
+                categorias_agrupadas[categoria.id]['itens'].append(item_executado)
+                itens_processados.add(item_executado.id)
+                print(f"Item {item_executado.id} adicionado à categoria {categoria.nome}")
+        except Exception as e:
+            # Log do erro para debug
+            print(f"Erro ao processar item executado {item_executado.id}: {e}")
+            continue
+    
+    # Ordenar categorias pela ordem
+    categorias_ordenadas = sorted(categorias_agrupadas.values(), key=lambda x: x['categoria'].ordem) if categorias_agrupadas else []
+    
     context = {
         'checklist_executado': checklist_executado,
-        'itens_executados': checklist_executado.itens_executados.all().order_by('item_checklist__ordem'),
+        'categorias_agrupadas': categorias_ordenadas,
     }
     return render(request, 'checklist/executar_detalhes.html', context)
 
@@ -898,10 +1150,10 @@ def checklist_relatorios(request):
     """Relatórios de checklists"""
     if request.user.is_oficina:
         try:
-            oficina = request.user.oficina
+            oficina = UsuarioOficina.objects.get(usuario=request.user)
             if oficina:
-                checklists = Checklist.objects.filter(oficina=oficina)
-                executados = ChecklistExecutado.objects.filter(checklist__oficina=oficina)
+                checklists = Checklist.objects.filter(oficina=oficina.oficina)
+                executados = ChecklistExecutado.objects.filter(checklist__oficina=oficina.oficina)
             else:
                 checklists = Checklist.objects.none()
                 executados = ChecklistExecutado.objects.none()
@@ -962,14 +1214,21 @@ def checklist_adicionar_item(request, checklist_id):
     checklist = get_object_or_404(Checklist, id=checklist_id)
     
     # Verificar permissões
-    try:
-        oficina = request.user.oficina
-        if not oficina or checklist.oficina != oficina:
-            messages.error(request, 'Você não tem permissão para editar este checklist.')
-            return redirect('checklist_lista')
-    except:
-        messages.error(request, 'Você não possui uma oficina associada.')
-        return redirect('checklist_lista')
+    if not request.user.is_staff:
+        if request.user.is_oficina:
+            try:
+                oficina = UsuarioOficina.objects.get(usuario=request.user)
+                if not oficina or checklist.oficina != oficina.oficina:
+                    messages.error(request, 'Você não tem permissão para editar este checklist.')
+                    return redirect('checklist_lista')
+            except:
+                messages.error(request, 'Você não possui uma oficina associada.')
+                return redirect('checklist_lista')
+        elif request.user.is_profissional:
+            profissional = get_object_or_404(Profissional, usuario=request.user)
+            if checklist.oficina != profissional.oficina:
+                messages.error(request, 'Você não tem permissão para editar este checklist.')
+                return redirect('checklist_lista')
     
     if request.method == 'POST':
         categoria_id = request.POST.get('categoria')
@@ -1017,7 +1276,7 @@ def checklist_adicionar_item(request, checklist_id):
 def checklist_gerenciar(request):
     """Página de gerenciamento avançado de checklists para oficinas"""
     try:
-        oficina = request.user.oficina
+        oficina = UsuarioOficina.objects.get(usuario=request.user)
         if not oficina:
             messages.error(request, 'Você não possui uma oficina associada.')
             return redirect('checklist_lista')
@@ -1031,7 +1290,7 @@ def checklist_gerenciar(request):
     busca = request.GET.get('busca')
     
     # Query base
-    checklists = Checklist.objects.filter(oficina=oficina)
+    checklists = Checklist.objects.filter(oficina=oficina.oficina)
     
     # Aplicar filtros
     if tipo_veiculo_id:
@@ -1060,14 +1319,14 @@ def checklist_gerenciar(request):
     inicio_mes = hoje.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     
     stats = {
-        'total_checklists': Checklist.objects.filter(oficina=oficina).count(),
-        'checklists_ativos': Checklist.objects.filter(oficina=oficina, ativo=True).count(),
+        'total_checklists': Checklist.objects.filter(oficina=oficina.oficina).count(),
+        'checklists_ativos': Checklist.objects.filter(oficina=oficina.oficina, ativo=True).count(),
         'execucoes_mes': ChecklistExecutado.objects.filter(
-            checklist__oficina=oficina,
+            checklist__oficina=oficina.oficina,
             data_execucao__gte=inicio_mes
         ).count(),
         'tipos_veiculos': TipoVeiculo.objects.filter(
-            checklists__oficina=oficina
+            checklists__oficina=oficina.oficina
         ).distinct().count(),
     }
     
@@ -1078,3 +1337,511 @@ def checklist_gerenciar(request):
     }
     
     return render(request, 'checklist/gerenciar.html', context)
+
+@login_required
+@oficina_required
+def checklist_gerenciar_itens(request, checklist_id):
+    """Gerenciar itens do checklist - selecionar itens por categoria"""
+    checklist = get_object_or_404(Checklist, id=checklist_id)
+    
+    # Verificar permissões
+    if not request.user.is_staff:
+        if request.user.is_oficina:
+            try:
+                oficina = UsuarioOficina.objects.get(usuario=request.user)
+                if not oficina or checklist.oficina != oficina.oficina:
+                    messages.error(request, 'Você não tem permissão para editar este checklist.')
+                    return redirect('checklist_lista')
+            except:
+                messages.error(request, 'Você não possui uma oficina associada.')
+                return redirect('checklist_lista')
+        elif request.user.is_profissional:
+            profissional = get_object_or_404(Profissional, usuario=request.user)
+            if checklist.oficina != profissional.oficina:
+                messages.error(request, 'Você não tem permissão para editar este checklist.')
+                return redirect('checklist_lista')
+    
+    if request.method == 'POST':
+        # Processar seleção de itens
+        itens_selecionados = request.POST.getlist('itens_selecionados')
+        itens_obrigatorios = request.POST.getlist('itens_obrigatorios')
+        itens_criticos = request.POST.getlist('itens_criticos')
+        
+        # Verificar se existem checklists em execução que referenciam itens deste checklist
+        checklists_em_execucao = ChecklistExecutado.objects.filter(
+            checklist=checklist,
+            status__in=['pendente', 'em_andamento']
+        ).exists()
+        
+        if checklists_em_execucao:
+            # Se há checklists em execução, identificar itens que estão sendo usados
+            itens_em_uso = set()
+            for checklist_exec in ChecklistExecutado.objects.filter(
+                checklist=checklist,
+                status__in=['pendente', 'em_andamento']
+            ):
+                itens_em_uso.update(
+                    checklist_exec.itens_executados.values_list('item_checklist_id', flat=True)
+                )
+            
+            # Desativar itens que não estão mais selecionados mas estão em uso
+            itens_para_desativar = ItemChecklistPersonalizado.objects.filter(
+                checklist=checklist,
+                id__in=itens_em_uso
+            ).exclude(
+                item_padrao_id__in=itens_selecionados
+            )
+            
+            for item in itens_para_desativar:
+                item.ativo = False
+                item.updated_by = request.user
+                item.save()
+            
+            # Remover apenas itens que NÃO estão em uso
+            ItemChecklistPersonalizado.objects.filter(
+                checklist=checklist
+            ).exclude(
+                id__in=itens_em_uso
+            ).delete()
+            
+            messages.warning(
+                request, 
+                f'Alguns itens foram mantidos porque existem checklists em execução. '
+                f'Itens não utilizados foram removidos e itens em uso foram desativados quando necessário.'
+            )
+        else:
+            # Se não há checklists em execução, pode remover todos os itens
+            ItemChecklistPersonalizado.objects.filter(checklist=checklist).delete()
+        
+        # Adicionar novos itens selecionados
+        for i, item_id in enumerate(itens_selecionados):
+            item_padrao = get_object_or_404(ItemChecklist, id=item_id)
+            obrigatorio = str(item_id) in itens_obrigatorios
+            critico = str(item_id) in itens_criticos
+            
+            # Verificar se o item já existe (pode ter sido desativado)
+            item_existente = ItemChecklistPersonalizado.objects.filter(
+                checklist=checklist,
+                item_padrao=item_padrao
+            ).first()
+            
+            if item_existente:
+                # Reativar e atualizar item existente
+                item_existente.ativo = True
+                item_existente.obrigatorio = obrigatorio
+                item_existente.critico = critico
+                item_existente.ordem = i + 1
+                item_existente.updated_by = request.user
+                item_existente.save()
+            else:
+                # Criar novo item
+                ItemChecklistPersonalizado.objects.create(
+                    checklist=checklist,
+                    item_padrao=item_padrao,
+                    obrigatorio=obrigatorio,
+                    critico=critico,
+                    ordem=i + 1,
+                    created_by=request.user,
+                    updated_by=request.user
+                )
+        
+        messages.success(request, f'{len(itens_selecionados)} itens adicionados ao checklist com sucesso!')
+        return redirect('checklist_detalhes', checklist_id=checklist.id)
+    
+    # Buscar itens organizados por categoria
+    categorias = CategoriaChecklist.objects.filter(
+        ativo=True,
+        itens__ativo=True
+    ).prefetch_related(
+        'itens'
+    ).distinct().order_by('ordem')
+    
+    # Buscar itens já selecionados no checklist
+    itens_selecionados = set()
+    itens_obrigatorios = set()
+    itens_criticos = set()
+    
+    for item_personalizado in ItemChecklistPersonalizado.objects.filter(
+        checklist=checklist,
+        item_padrao__isnull=False
+    ):
+        itens_selecionados.add(item_personalizado.item_padrao_id)
+        if item_personalizado.obrigatorio:
+            itens_obrigatorios.add(item_personalizado.item_padrao_id)
+        if item_personalizado.critico:
+            itens_criticos.add(item_personalizado.item_padrao_id)
+    
+    context = {
+        'checklist': checklist,
+        'categorias': categorias,
+        'itens_selecionados': itens_selecionados,
+        'itens_obrigatorios': itens_obrigatorios,
+        'itens_criticos': itens_criticos,
+    }
+    
+    return render(request, 'checklist/gerenciar_itens.html', context)
+
+@login_required
+def checklist_gerar_pdf(request, checklist_executado_id):
+    """Gerar PDF do relatório de checklist executado"""
+    checklist_executado = get_object_or_404(ChecklistExecutado, id=checklist_executado_id)
+    
+    # Verificar se o usuário tem permissão para acessar este checklist
+    if not request.user.is_staff:
+        if request.user.is_oficina:
+            # Oficina só pode ver seus próprios checklists
+            try:
+                oficina_rel = UsuarioOficina.objects.get(usuario=request.user)
+                if checklist_executado.checklist.oficina != oficina_rel.oficina:
+                    messages.error(request, 'Você não tem permissão para acessar este checklist.')
+                    return redirect('checklist_lista')
+            except UsuarioOficina.DoesNotExist:
+                messages.error(request, 'Você não possui uma oficina associada.')
+                return redirect('checklist_lista')
+        elif request.user.is_profissional:
+            # Profissionais só podem ver checklists da oficina onde trabalham
+            try:
+                profissional = Profissional.objects.get(usuario=request.user)
+                if checklist_executado.checklist.oficina != profissional.oficina:
+                    messages.error(request, 'Você não tem permissão para acessar este checklist.')
+                    return redirect('checklist_lista')
+            except Profissional.DoesNotExist:
+                messages.error(request, 'Você não possui um perfil profissional associado.')
+                return redirect('checklist_lista')
+        else:
+            # Usuários comuns só podem ver checklists de seus veículos
+            if checklist_executado.veiculo and checklist_executado.veiculo.usuario != request.user:
+                messages.error(request, 'Você não tem permissão para acessar este checklist.')
+                return redirect('checklist_lista')
+    
+    # Verificar se o checklist está executado
+    if checklist_executado.status != 'executado':
+        messages.error(request, 'PDF disponível apenas para execuções concluídas.')
+        return redirect('checklist_detalhes', checklist_id=checklist_executado.checklist.id)
+    
+    # Buscar itens executados organizados por categoria
+    itens_executados = ItemChecklistExecutado.objects.filter(
+        checklist_executado=checklist_executado
+    ).select_related(
+        'item_checklist__item_padrao__categoria',
+        'item_checklist'
+    ).order_by(
+        'item_checklist__item_padrao__categoria__ordem',
+        'item_checklist__ordem'
+    )
+    
+    # Organizar itens por categoria
+    categorias_data = {}
+    for item_executado in itens_executados:
+        categoria = item_executado.item_checklist.item_padrao.categoria if item_executado.item_checklist.item_padrao else None
+        categoria_nome = categoria.nome if categoria else 'Itens Personalizados'
+        
+        if categoria_nome not in categorias_data:
+            categorias_data[categoria_nome] = []
+        
+        categorias_data[categoria_nome].append(item_executado)
+    
+    # Criar PDF
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=18)
+    
+    # Estilos
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=18,
+        spaceAfter=20,
+        alignment=1  # Center
+    )
+    
+    form_header_style = ParagraphStyle(
+        'FormHeader',
+        parent=styles['Heading2'],
+        fontSize=12,
+        spaceAfter=15,
+        textColor=colors.darkblue,
+        alignment=1
+    )
+    
+    # Conteúdo do PDF
+    story = []
+    
+    # Título
+    story.append(Paragraph(f"RELATÓRIO DE CHECKLIST VEICULAR", title_style))
+    story.append(Spacer(1, 15))
+    
+    # Cabeçalho em formato de formulário
+    story.append(Paragraph("INFORMAÇÕES GERAIS", form_header_style))
+    
+    # Primeira linha do formulário - 3 colunas
+    form_data_1 = [
+        ['Checklist:', checklist_executado.checklist.nome, 'Data/Hora:', checklist_executado.data_execucao.strftime('%d/%m/%Y %H:%M'), 'Status:', checklist_executado.get_status_display()]
+    ]
+    
+    form_table_1 = Table(form_data_1, colWidths=[0.8*inch, 2.2*inch, 0.8*inch, 1.5*inch, 0.6*inch, 1.1*inch])
+    form_table_1.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.lightgrey),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (4, 0), (4, -1), 'Helvetica-Bold'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 4),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    
+    story.append(form_table_1)
+    story.append(Spacer(1, 8))
+    
+    # Segunda linha do formulário - 2 colunas
+    form_data_2 = [
+        ['Oficina:', checklist_executado.checklist.oficina.nome, 'Tipo de Veículo:', checklist_executado.checklist.tipo_veiculo.nome]
+    ]
+    
+    form_table_2 = Table(form_data_2, colWidths=[0.8*inch, 3*inch, 1.2*inch, 2*inch])
+    form_table_2.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.lightgrey),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 4),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    
+    story.append(form_table_2)
+    story.append(Spacer(1, 8))
+    
+    # Terceira linha - Executado por
+    form_data_3 = [
+        ['Executado por:', checklist_executado.usuario.get_full_name() or checklist_executado.usuario.username, '', '']
+    ]
+    
+    form_table_3 = Table(form_data_3, colWidths=[1.2*inch, 5.8*inch, 0*inch, 0*inch])
+    form_table_3.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.lightgrey),
+        ('GRID', (0, 0), (1, -1), 1, colors.black),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 4),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    
+    story.append(form_table_3)
+    story.append(Spacer(1, 15))
+    
+    # Seção do veículo (se disponível)
+    if checklist_executado.veiculo:
+        story.append(Paragraph("DADOS DO VEÍCULO", form_header_style))
+        
+        # Primeira linha do veículo - 3 colunas
+        veiculo_data_1 = [
+            ['Marca/Modelo:', f"{checklist_executado.veiculo.marca} {checklist_executado.veiculo.modelo}", 'Placa:', checklist_executado.veiculo.placa, 'Ano:', str(checklist_executado.veiculo.ano)]
+        ]
+        
+        veiculo_table_1 = Table(veiculo_data_1, colWidths=[1.2*inch, 2.3*inch, 0.6*inch, 1.2*inch, 0.5*inch, 1.2*inch])
+        veiculo_table_1.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
+            ('FONTNAME', (4, 0), (4, -1), 'Helvetica-Bold'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('LEFTPADDING', (0, 0), (-1, -1), 4),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ]))
+        
+        story.append(veiculo_table_1)
+        story.append(Spacer(1, 8))
+        
+        # Segunda linha do veículo - Proprietário
+        veiculo_data_2 = [
+            ['Proprietário:', checklist_executado.veiculo.usuario.get_full_name() or checklist_executado.veiculo.usuario.username, '', '']
+        ]
+        
+        veiculo_table_2 = Table(veiculo_data_2, colWidths=[1.2*inch, 5.8*inch, 0*inch, 0*inch])
+        veiculo_table_2.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (1, -1), 1, colors.black),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('LEFTPADDING', (0, 0), (-1, -1), 4),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ]))
+        
+        story.append(veiculo_table_2)
+        story.append(Spacer(1, 20))
+    
+    # Itens por categoria
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=14,
+        spaceAfter=12,
+        textColor=colors.darkblue
+    )
+    
+    # Calcular totalizadores
+    total_itens = 0
+    total_ok = 0
+    total_atencao = 0
+    total_problemas = 0
+    
+    for categoria_nome, itens in categorias_data.items():
+        for item_executado in itens:
+            total_itens += 1
+            resultado = item_executado.resultado or ''
+            
+            if resultado.lower() in ['ok', 'aprovado', 'conforme', 'sim']:
+                total_ok += 1
+            elif resultado.lower() in ['atenção', 'atencao', 'revisar', 'verificar']:
+                total_atencao += 1
+            elif resultado.lower() in ['problema', 'reprovado', 'não conforme', 'nao conforme', 'não', 'nao']:
+                total_problemas += 1
+    
+    # Cards de totalizadores
+    story.append(Paragraph("RESUMO DA INSPEÇÃO", heading_style))
+    
+    # Criar tabela com 4 cards em uma linha
+    cards_data = [[
+        f"Total de Itens\n{total_itens}",
+        f"Itens OK\n{total_ok}", 
+        f"Itens com Atenção\n{total_atencao}",
+        f"Itens com Problemas\n{total_problemas}"
+    ]]
+    
+    cards_table = Table(cards_data, colWidths=[1.75*inch, 1.75*inch, 1.75*inch, 1.75*inch])
+    cards_table.setStyle(TableStyle([
+        # Card 1 - Total (azul)
+        ('BACKGROUND', (0, 0), (0, 0), colors.lightblue),
+        ('TEXTCOLOR', (0, 0), (0, 0), colors.darkblue),
+        
+        # Card 2 - OK (verde)
+        ('BACKGROUND', (1, 0), (1, 0), colors.lightgreen),
+        ('TEXTCOLOR', (1, 0), (1, 0), colors.darkgreen),
+        
+        # Card 3 - Atenção (amarelo)
+        ('BACKGROUND', (2, 0), (2, 0), colors.lightyellow),
+        ('TEXTCOLOR', (2, 0), (2, 0), colors.orange),
+        
+        # Card 4 - Problemas (vermelho)
+        ('BACKGROUND', (3, 0), (3, 0), colors.lightcoral),
+        ('TEXTCOLOR', (3, 0), (3, 0), colors.red),
+        
+        # Estilo geral
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 11),
+        ('GRID', (0, 0), (-1, -1), 2, colors.black),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+    ]))
+    
+    story.append(cards_table)
+    story.append(Spacer(1, 20))
+    
+    story.append(Paragraph("ITENS VERIFICADOS", heading_style))
+    
+    for categoria_nome, itens in categorias_data.items():
+        # Título da categoria
+        story.append(Paragraph(f"Categoria: {categoria_nome}", ParagraphStyle(
+            'CategoryTitle',
+            parent=styles['Heading3'],
+            fontSize=12,
+            spaceAfter=10,
+            textColor=colors.darkgreen
+        )))
+        
+        # Tabela de itens
+        item_data = [['Item', 'Resultado', 'Valor', 'Observações']]
+        
+        for item_executado in itens:
+            item_nome = (
+                item_executado.item_checklist.item_padrao.nome 
+                if item_executado.item_checklist.item_padrao 
+                else item_executado.item_checklist.nome_personalizado or 'Item Personalizado'
+            )
+            
+            resultado = item_executado.resultado or '-'
+            valor = item_executado.valor_resultado or '-'
+            observacoes = item_executado.observacoes or '-'
+            
+            # Limitar o tamanho das observações
+            if len(observacoes) > 50:
+                observacoes = observacoes[:47] + '...'
+            
+            item_data.append([item_nome, resultado, valor, observacoes])
+        
+        item_table = Table(item_data, colWidths=[2.5*inch, 1*inch, 1*inch, 1.5*inch])
+        
+        # Estilo base da tabela
+        table_style = [
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ]
+        
+        # Adicionar cor vermelha para itens com problemas
+        for i, item_executado in enumerate(itens, start=1):
+            resultado = item_executado.resultado or ''
+            if resultado.lower() in ['problema', 'reprovado', 'não conforme', 'nao conforme', 'não', 'nao']:
+                table_style.append(('TEXTCOLOR', (1, i), (1, i), colors.red))  # Coluna Resultado
+                table_style.append(('TEXTCOLOR', (2, i), (2, i), colors.red))  # Coluna Valor
+        
+        item_table.setStyle(TableStyle(table_style))
+        
+        story.append(item_table)
+        story.append(Spacer(1, 20))
+    
+    # Rodapé
+    story.append(Spacer(1, 30))
+    story.append(Paragraph(
+        f"Relatório gerado em {timezone.now().strftime('%d/%m/%Y às %H:%M')}",
+        ParagraphStyle(
+            'Footer',
+            parent=styles['Normal'],
+            fontSize=8,
+            textColor=colors.grey,
+            alignment=1  # Center
+        )
+    ))
+    
+    # Construir PDF
+    doc.build(story)
+    
+    # Retornar resposta
+    buffer.seek(0)
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="checklist_{checklist_executado.id}_{checklist_executado.data_execucao.strftime("%Y%m%d")}.pdf"'
+    
+    return response

@@ -13,6 +13,7 @@ class Usuario(AbstractUser):
     telefone = models.CharField(max_length=20, blank=True)
     email_verificado = models.BooleanField(default=False)
     aprovado_pendente = models.BooleanField(default=False, help_text="Aguardando aprovação do administrador")
+    is_admin_oficina = models.BooleanField(default=False)
     # Outros campos relevantes
     class Meta:
         verbose_name = 'Usuário'
@@ -51,7 +52,6 @@ class CodigoVerificacao(models.Model):
         db_table = 'codigo_verificacao'
         ordering = ['-data_criacao']
         
-
 class Veiculo(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='veiculos')
     marca = models.CharField(max_length=50)
@@ -73,10 +73,7 @@ class Veiculo(models.Model):
         db_table = 'veiculos'
         ordering = ['marca', 'modelo', 'placa']
         
-    
-
 class Oficina(models.Model):
-    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='oficina', null=True, blank=True)
     nome = models.CharField(max_length=200)
     endereco = models.TextField()
     telefone = models.CharField(max_length=20)
@@ -84,6 +81,7 @@ class Oficina(models.Model):
     site = models.URLField(blank=True)
     cnpj = models.CharField(max_length=18)
     aprovado = models.BooleanField(default=False)
+    numero_usuarios = models.IntegerField(default=2)
     data_criacao = models.DateTimeField(auto_now_add=True)
     data_atualizacao = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='oficinas_criado')
@@ -95,7 +93,6 @@ class Oficina(models.Model):
         db_table = 'oficinas'
         ordering = ['nome']
      
-
 class Profissional(models.Model):
     usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='perfil_profissional')
     especialidade = models.CharField(max_length=100)
@@ -178,7 +175,6 @@ class Avaliacao(models.Model):
     def __str__(self):
         return f"Avaliação de {self.profissional} por {self.usuario} - {self.nota}/5"
 
-# Models para o sistema de Checklist
 class TipoVeiculo(models.Model):
     """Tipos de veículos (carro, moto, caminhão, etc.)"""
     nome = models.CharField(max_length=100, unique=True)
@@ -238,6 +234,8 @@ class ItemChecklist(models.Model):
     ordem = models.PositiveIntegerField(default=0, help_text="Ordem dentro da categoria")
     ativo = models.BooleanField(default=True)
     data_criacao = models.DateTimeField(auto_now_add=True)
+    tipo_resultado = models.CharField(choices=[('1', 'Status'), ('2', 'Valor')], default='1', max_length=10)
+    tipo_dado = models.CharField(max_length=10, choices=[('1', 'Numero'), ('2', 'Texto')], default='1')
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='itens_checklist')
     obrigatorio = models.BooleanField(default=True, help_text="Item obrigatório no checklist")
     data_atualizacao = models.DateTimeField(auto_now=True)
@@ -273,7 +271,7 @@ class Checklist(models.Model):
         verbose_name_plural = 'Checklists'
         db_table = 'checklists'
         ordering = ['oficina__nome', 'tipo_veiculo__nome', 'nome']
-        unique_together = ['oficina', 'tipo_veiculo', 'nome']
+        unique_together = ['oficina', 'tipo_veiculo']
 
 class ItemChecklistPersonalizado(models.Model):
     """Itens personalizados do checklist da oficina"""
@@ -299,7 +297,6 @@ class ItemChecklistPersonalizado(models.Model):
         db_table = 'itens_checklist_personalizados'
         ordering = ['checklist', 'ordem']
 
-
 class ChecklistExecutado(models.Model):
     checklist = models.ForeignKey(Checklist, on_delete=models.CASCADE, related_name='checklist_executado')
     veiculo = models.ForeignKey(Veiculo, on_delete=models.CASCADE, related_name='checklists_executados', 
@@ -308,7 +305,7 @@ class ChecklistExecutado(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='checklist_executado')
     observacoes = models.TextField(blank=True)
     data_atualizacao = models.DateTimeField(auto_now=True)
-    status = models.CharField(max_length=200, choices=[('pendente', 'Pendente'), ('executado', 'Executado'), ('cancelado', 'Cancelado')], default='pendente')
+    status = models.CharField(max_length=30, choices=[('pendente', 'Pendente'), ('executado', 'Executado'), ('cancelado', 'Cancelado')], default='pendente')
     data_criacao = models.DateTimeField(auto_now_add=True)
     data_atualizacao = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='checklist_executado_criado')
@@ -324,12 +321,32 @@ class ChecklistExecutado(models.Model):
         veiculo_info = f" - {self.veiculo.placa}" if self.veiculo else ""
         return f"{self.checklist.oficina.nome}{veiculo_info} - {self.data_execucao}"
     
-
+    def get_progresso(self):
+        """Calcula o progresso do checklist executado"""
+        total_itens = self.itens_executados.count()
+        if total_itens == 0:
+            return {'percentual': 0, 'concluidos': 0, 'total': 0}
+        
+        # Contar itens que não estão pendentes (resultado != '4')
+        itens_concluidos = self.itens_executados.exclude(resultado='4').count()
+        percentual = round((itens_concluidos / total_itens) * 100)
+        
+        return {
+            'percentual': percentual,
+            'concluidos': itens_concluidos,
+            'total': total_itens
+        }
+    
+    def get_progresso_display(self):
+        """Retorna uma string formatada do progresso"""
+        progresso = self.get_progresso()
+        return f"{progresso['concluidos']}/{progresso['total']} ({progresso['percentual']}%)"
+    
 class ItemChecklistExecutado(models.Model):
     checklist_executado = models.ForeignKey(ChecklistExecutado, on_delete=models.CASCADE, related_name='itens_executados')
     item_checklist = models.ForeignKey(ItemChecklistPersonalizado, on_delete=models.CASCADE, related_name='itens_checklist_executados')
-    checked = models.BooleanField(default=False)
-    resultado = models.CharField(max_length=200)
+    resultado = models.CharField(choices=[('1', 'OK'), ('2', 'Atenção'), ('3', 'Problema'),('4', 'Pendente')],  default='4', max_length=10)
+    valor_resultado = models.CharField(max_length=30, blank=True, null=True)
     observacoes = models.TextField(blank=True)
     data_criacao = models.DateTimeField(auto_now_add=True)
     data_atualizacao = models.DateTimeField(auto_now=True)
@@ -341,12 +358,11 @@ class ItemChecklistExecutado(models.Model):
         verbose_name_plural = 'Itens Checklist Executados'
         db_table = 'itens_checklist_executado'
         ordering = ['checklist_executado', 'item_checklist__ordem', 'resultado']
-        
-    
+            
 class Arquivos_checklist(models.Model):
     item_checklist_executado = models.ForeignKey(ItemChecklistExecutado, on_delete=models.CASCADE, related_name='arquivos')
     arquivo = models.CharField(max_length=200)
-    tipo = models.CharField(max_length=200, choices=[('foto', 'Foto'), ('documento', 'Documento')])
+    tipo = models.CharField(max_length=30, choices=[('foto', 'Foto'), ('documento', 'Documento')])
     data_criacao = models.DateTimeField(auto_now_add=True)
     data_atualizacao = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='arquivos_checklist_criado')
@@ -360,10 +376,8 @@ class Arquivos_checklist(models.Model):
 
     def __str__(self):
         return f"{self.item_checklist_executado.checklist_executado.checklist.oficina.nome} - {self.item_checklist_executado.checklist_executado.checklist.tipo_veiculo.nome} - {self.arquivo}"
-    
-    
-    
-class usuarioOficina(models.Model):
+      
+class UsuarioOficina(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='usuario_oficina')
     oficina = models.ForeignKey(Oficina, on_delete=models.CASCADE, related_name='usuario_oficina')
     data_criacao = models.DateTimeField(auto_now_add=True)

@@ -64,8 +64,12 @@ urlpatterns = [
     path('checklist/criar/', views.checklist_criar, name='checklist_criar'),
     path('checklist/<int:checklist_id>/', views.checklist_detalhes, name='checklist_detalhes'),
     path('checklist/<int:checklist_id>/editar/', views.checklist_editar, name='checklist_editar'),
+    path('checklist/<int:checklist_id>/gerenciar-itens/', views.checklist_gerenciar_itens, name='checklist_gerenciar_itens'),
+    path('checklist/<int:checklist_id>/gerenciar-execucoes/', views.checklist_gerenciar_execucoes, name='checklist_gerenciar_execucoes'),
     path('checklist/<int:checklist_id>/executar/', views.checklist_executar, name='checklist_executar'),
     path('checklist/executar/<int:checklist_executado_id>/', views.checklist_executar_detalhes, name='checklist_executar_detalhes'),
+    # Na linha 70, deve estar:
+    path('checklist/pdf/<int:checklist_executado_id>/', views.checklist_gerar_pdf, name='checklist_gerar_pdf'),
     path('checklist/relatorios/', views.checklist_relatorios, name='checklist_relatorios'),
     # API URLs
     path('api/', include('core.api_urls')),

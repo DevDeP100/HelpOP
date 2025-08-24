@@ -1,0 +1,432 @@
+{% extends 'base.html' %}
+
+{% block title %}Gerenciar Itens - {{ checklist.nome }} - HelpOP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="container py-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="text-warning mb-2">
+                        <i class="fas fa-cogs me-2"></i>Gerenciar Itens do Checklist
+                    </h2>
+                    <h5 class="text-light mb-0">{{ checklist.nome }}</h5>
+                    <small class="text-light">{{ checklist.tipo_veiculo.nome }} - {{ checklist.oficina.nome }}</small>
+                </div>
+                <div>
+                    <a href="{% url 'checklist_detalhes' checklist.id %}" class="btn btn-outline-warning me-2">
+                        <i class="fas fa-arrow-left me-2"></i>Voltar
+                    </a>
+                    <button type="submit" form="itensForm" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Salvar Itens
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Formulário de Seleção de Itens -->
+    <form method="post" id="itensForm">
+        {% csrf_token %}
+        
+
+
+        <!-- Indicadores -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0" style="color: black;">
+                            <i class="fas fa-chart-bar me-2"></i>Indicadores
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <div class="border-end">
+                                    <h4 class="text-warning" id="totalSelecionados">0</h4>
+                                    <small class="text-light">Itens Selecionados</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border-end">
+                                    <h4 class="text-success" id="totalObrigatorios">0</h4>
+                                    <small class="text-light">Obrigatórios</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border-end">
+                                    <h4 class="text-danger" id="totalCriticos">0</h4>
+                                    <small class="text-light">Críticos</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <h4 class="text-info" id="totalCategorias">{{ categorias|length }}</h4>
+                                <small class="text-light">Categorias</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controles -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h5 class="mb-0 text-warning">
+                                    <i class="fas fa-list-check me-2"></i>Seleção de Itens
+                                </h5>
+                                <p class="text-muted small mb-0 mt-1">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Marque os itens desejados. Use "Obrigatório" para itens essenciais e "Crítico" para itens de segurança.
+                                </p>
+                            </div>
+                            <div class="col-auto">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-outline-dark btn-sm" id="selectAll">
+                                        <i class="fas fa-check-double me-1"></i>Selecionar Todos
+                                    </button>
+                                    <button type="button" class="btn btn-outline-dark btn-sm" id="deselectAll">
+                                        <i class="fas fa-times me-1"></i>Desmarcar Todos
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Itens por Categoria -->
+        <div class="row">
+            <div class="col-12">
+                {% for categoria in categorias %}
+            <div class="card mb-4" style="border-left: 4px solid #ffd700; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div class="card-header" style="background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #000; font-weight: bold;">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h4 class="mb-0">
+                                <i class="fas fa-cog me-2"></i>
+                                {{ categoria.ordem }}. {{ categoria.nome }}
+                            </h4>
+                            {% if categoria.descricao %}
+                                <small class="text-dark">{{ categoria.descricao }}</small>
+                            {% endif %}
+                        </div>
+                        <div class="col-auto d-flex align-items-center">
+                            <span class="badge bg-dark me-3">
+                                <span class="categoria-selecionados" data-categoria-id="{{ categoria.id }}">0</span>/{{ categoria.itens.count }} itens
+                            </span>
+                            <button type="button" class="btn btn-link text-dark p-0 toggle-categoria" 
+                                    data-categoria-id="{{ categoria.id }}" 
+                                    title="Expandir/Colapsar categoria">
+                                <i class="fas fa-chevron-down toggle-icon" id="icon_{{ categoria.id }}"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body categoria-body" id="categoria-body-{{ categoria.id }}">
+                    <div style="max-height: 400px; overflow-y: auto; overflow-x: hidden;">
+                        <div class="row g-2">
+                            {% for item in categoria.itens.all %}
+                                <div class="col-md-6 mb-2">
+                                    <div class="d-flex align-items-center flex-wrap item-container">
+                                        <!-- Checkbox de seleção -->
+                                        <div class="form-check me-2 flex-shrink-0">
+                                            <input class="form-check-input item-checkbox" type="checkbox" 
+                                                   name="itens_selecionados" value="{{ item.id }}" 
+                                                   id="item_{{ item.id }}"
+                                                   {% if item.id in itens_selecionados %}checked{% endif %}
+                                                   style="transform: scale(1.2);">
+                                        </div>
+                                        
+                                        <!-- Nome do item -->
+                                        <span class="flex-grow-1 text-light fw-bold item-name text-truncate">{{ item.nome }}</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+                {% empty %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: var(--primary-yellow); opacity: 0.5;"></i>
+                        <h4 class="text-warning mt-3">Nenhuma categoria encontrada</h4>
+                        <p class="text-warning mb-4">Não há categorias de checklist disponíveis no sistema.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </form>
+    </div>
+</div>
+
+<style>
+.category-card { 
+    border-left: 4px solid #ffd700; 
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.category-header {
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    color: #000;
+    font-weight: bold;
+}
+.item-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+.item-badge {
+    background-color: #e9ecef;
+    color: #495057;
+    font-size: 0.85rem;
+}
+.stats-card {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+}
+
+/* Melhorar visibilidade dos checkboxes */
+.form-check-input {
+    border: 2px solid #ffd700;
+}
+
+.form-check-input:checked {
+    background-color: #ffd700;
+    border-color: #ffd700;
+}
+
+.form-check-input:focus {
+    border-color: #ffed4e;
+    box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.25);
+}
+
+/* Melhorar contraste dos itens */
+.item-name {
+    color: #ffffff !important;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+
+/* Melhorar visibilidade dos labels */
+.checkbox-label {
+    font-weight: 600;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+}
+
+/* Prevenir rolagem horizontal */
+.card-body {
+    overflow-x: hidden;
+}
+
+.row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.col-md-6 {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+/* Melhorar responsividade dos itens */
+.item-container {
+    min-width: 0;
+    word-wrap: break-word;
+}
+
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Ajustar espaçamento dos checkboxes inline */
+.form-check-inline {
+    margin-right: 1rem;
+}
+
+/* Garantir que as opções não quebrem o layout */
+.item-options {
+    max-width: 100%;
+    overflow-wrap: break-word;
+}
+
+/* Estilos para o botão de toggle */
+.toggle-categoria {
+    transition: all 0.3s ease;
+    border: none;
+    background: transparent;
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.toggle-categoria:hover {
+    transform: scale(1.1);
+    color: #000 !important;
+}
+
+.toggle-categoria:focus {
+    box-shadow: none;
+    outline: none;
+}
+
+.toggle-icon {
+    transition: transform 0.3s ease;
+}
+
+/* Transição suave para o corpo da categoria */
+.categoria-body {
+    transition: all 0.3s ease;
+}
+
+/* Melhorar aparência do badge */
+.badge.bg-dark {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Adicionar classe auth-pages ao body
+document.body.classList.add('auth-pages');
+
+// Controle de seleção de itens
+document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('item-checkbox')) {
+        updateSummary();
+    }
+});
+
+// Selecionar todos
+document.getElementById('selectAll').addEventListener('click', function() {
+    const checkboxes = document.querySelectorAll('.item-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+    });
+    updateSummary();
+});
+
+// Desmarcar todos
+document.getElementById('deselectAll').addEventListener('click', function() {
+    const checkboxes = document.querySelectorAll('.item-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    updateSummary();
+});
+
+
+
+// Atualizar resumo
+function updateSummary() {
+    const totalSelecionados = document.querySelectorAll('.item-checkbox:checked').length;
+    
+    document.getElementById('totalSelecionados').textContent = totalSelecionados;
+    // Todos os itens selecionados são obrigatórios
+    document.getElementById('totalObrigatorios').textContent = totalSelecionados;
+    // Não há mais itens críticos
+    document.getElementById('totalCriticos').textContent = 0;
+    
+    // Atualizar contadores por categoria
+    updateCategoriaCounters();
+}
+
+// Atualizar contadores de itens selecionados por categoria
+function updateCategoriaCounters() {
+    const categoriaCounters = document.querySelectorAll('.categoria-selecionados');
+    
+    categoriaCounters.forEach(counter => {
+        const categoriaId = counter.getAttribute('data-categoria-id');
+        const categoriaContainer = document.getElementById(`categoria-body-${categoriaId}`);
+        
+        if (categoriaContainer) {
+            const checkboxesSelecionados = categoriaContainer.querySelectorAll('.item-checkbox:checked').length;
+            counter.textContent = checkboxesSelecionados;
+        }
+    });
+}
+
+// Atualizar resumo inicial
+updateSummary();
+updateCategoriaCounters();
+
+// Inicializar todas as categorias como colapsadas
+document.addEventListener('DOMContentLoaded', function() {
+    const todasCategorias = document.querySelectorAll('.categoria-body');
+    todasCategorias.forEach(function(categoria) {
+        categoria.style.display = 'none';
+    });
+});
+
+// Controle de colapso/expansão das categorias (accordion)
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.toggle-categoria')) {
+        const button = e.target.closest('.toggle-categoria');
+        const categoriaId = button.getAttribute('data-categoria-id');
+        const categoriaBody = document.getElementById(`categoria-body-${categoriaId}`);
+        const icon = document.getElementById(`icon_${categoriaId}`);
+        
+        // Primeiro, colapsar todas as outras categorias
+        const todasCategorias = document.querySelectorAll('.categoria-body');
+        const todosIcones = document.querySelectorAll('.toggle-icon');
+        const todosBotoes = document.querySelectorAll('.toggle-categoria');
+        
+        todasCategorias.forEach(function(cat) {
+            if (cat.id !== `categoria-body-${categoriaId}`) {
+                cat.style.display = 'none';
+            }
+        });
+        
+        todosIcones.forEach(function(icone) {
+            if (icone.id !== `icon_${categoriaId}`) {
+                icone.className = 'fas fa-chevron-down toggle-icon';
+            }
+        });
+        
+        todosBotoes.forEach(function(btn) {
+            if (btn.getAttribute('data-categoria-id') !== categoriaId) {
+                btn.setAttribute('title', 'Expandir categoria');
+            }
+        });
+        
+        // Agora alternar a categoria clicada
+        if (categoriaBody.style.display === 'none') {
+            // Expandir categoria
+            categoriaBody.style.display = 'block';
+            icon.className = 'fas fa-chevron-up toggle-icon';
+            button.setAttribute('title', 'Colapsar categoria');
+        } else {
+            // Colapsar categoria
+            categoriaBody.style.display = 'none';
+            icon.className = 'fas fa-chevron-down toggle-icon';
+            button.setAttribute('title', 'Expandir categoria');
+        }
+    }
+});
+
+// Validação do formulário
+document.getElementById('itensForm').addEventListener('submit', function(e) {
+    const itensSelecionados = document.querySelectorAll('.item-checkbox:checked');
+    
+    if (itensSelecionados.length === 0) {
+        e.preventDefault();
+        alert('Selecione pelo menos um item para o checklist.');
+        return false;
+    }
+    
+    return true;
+});
+</script>
+{% endblock %}

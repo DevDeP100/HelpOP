@@ -8,7 +8,7 @@ from drf_yasg import openapi
 from .models import (
     Usuario, Veiculo, Oficina, Profissional, Servico, Manutencao, Avaliacao,
     TipoVeiculo, CategoriaChecklist, ItemChecklist, Checklist, ItemChecklistPersonalizado,
-    ChecklistExecutado, ItemChecklistExecutado, Arquivos_checklist, usuarioOficina
+    ChecklistExecutado, ItemChecklistExecutado, Arquivos_checklist, UsuarioOficina
 )
 from .serializers import (
     UsuarioSerializer, VeiculoSerializer, OficinaSerializer, ProfissionalSerializer,
@@ -209,9 +209,9 @@ class ChecklistViewSet(viewsets.ModelViewSet):
             return Checklist.objects.all()
         elif self.request.user.is_oficina:
             try:
-                oficina = self.request.user.oficina
+                oficina = UsuarioOficina.objects.get(usuario=self.request.user)
                 if oficina:
-                    return Checklist.objects.filter(oficina=oficina)
+                    return Checklist.objects.filter(oficina=oficina.oficina)
                 else:
                     return Checklist.objects.none()
             except:
@@ -245,9 +245,9 @@ class ItemChecklistPersonalizadoViewSet(viewsets.ModelViewSet):
             return ItemChecklistPersonalizado.objects.all()
         elif self.request.user.is_oficina:
             try:
-                oficina = self.request.user.oficina
+                oficina = UsuarioOficina.objects.get(usuario=self.request.user)
                 if oficina:
-                    return ItemChecklistPersonalizado.objects.filter(checklist__oficina=oficina)
+                    return ItemChecklistPersonalizado.objects.filter(checklist__oficina=oficina.oficina)
                 else:
                     return ItemChecklistPersonalizado.objects.none()
             except:
@@ -270,9 +270,9 @@ class ChecklistExecutadoViewSet(viewsets.ModelViewSet):
             return ChecklistExecutado.objects.all()
         elif self.request.user.is_oficina:
             try:
-                oficina = self.request.user.oficina
+                oficina = UsuarioOficina.objects.get(usuario=self.request.user)
                 if oficina:
-                    return ChecklistExecutado.objects.filter(checklist__oficina=oficina)
+                    return ChecklistExecutado.objects.filter(checklist__oficina=oficina.oficina)
                 else:
                     return ChecklistExecutado.objects.none()
             except:
@@ -306,9 +306,9 @@ class ItemChecklistExecutadoViewSet(viewsets.ModelViewSet):
             return ItemChecklistExecutado.objects.all()
         elif self.request.user.is_oficina:
             try:
-                oficina = self.request.user.oficina
+                oficina = UsuarioOficina.objects.get(usuario=self.request.user)
                 if oficina:
-                    return ItemChecklistExecutado.objects.filter(checklist_executado__checklist__oficina=oficina)
+                    return ItemChecklistExecutado.objects.filter(checklist_executado__checklist__oficina=oficina.oficina)
                 else:
                     return ItemChecklistExecutado.objects.none()
             except:
@@ -328,9 +328,9 @@ class ArquivosChecklistViewSet(viewsets.ModelViewSet):
             return Arquivos_checklist.objects.all()
         elif self.request.user.is_oficina:
             try:
-                oficina = self.request.user.oficina
+                oficina = UsuarioOficina.objects.get(usuario=self.request.user)
                 if oficina:
-                    return Arquivos_checklist.objects.filter(item_checklist_executado__checklist_executado__checklist__oficina=oficina)
+                    return Arquivos_checklist.objects.filter(item_checklist_executado__checklist_executado__checklist__oficina=oficina.oficina)
                 else:
                     return Arquivos_checklist.objects.none()
             except:
@@ -354,21 +354,21 @@ class UsuarioOficinaViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         if self.request.user.is_staff:
-            return usuarioOficina.objects.all()
+            return UsuarioOficina.objects.all()
         elif self.request.user.is_oficina:
             try:
-                oficina = self.request.user.oficina
+                oficina = UsuarioOficina.objects.get(usuario=self.request.user)
                 if oficina:
                     # Usuário tem oficina direta - pode ver relacionamentos da sua oficina
-                    return usuarioOficina.objects.filter(oficina=oficina)
+                    return UsuarioOficina.objects.filter(oficina=oficina.oficina)
                 else:
                     # Usuário é oficina mas não tem oficina direta - pode ver seus próprios relacionamentos
-                    return usuarioOficina.objects.filter(usuario=self.request.user)
+                    return UsuarioOficina.objects.filter(usuario=self.request.user)
             except:
                 # Usuário é oficina mas não tem oficina direta - pode ver seus próprios relacionamentos
-                return usuarioOficina.objects.filter(usuario=self.request.user)
+                return UsuarioOficina.objects.filter(usuario=self.request.user)
         else:
-            return usuarioOficina.objects.filter(usuario=self.request.user)
+            return UsuarioOficina.objects.filter(usuario=self.request.user)
     
     @swagger_auto_schema(
         operation_description="Retorna relacionamentos usuário-oficina ativos",

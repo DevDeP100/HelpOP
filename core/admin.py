@@ -4,7 +4,7 @@ from django.contrib import messages
 from .models import (
     Usuario, Veiculo, Profissional, Servico, Manutencao, Avaliacao,
     TipoVeiculo, CategoriaChecklist, ItemChecklist, Checklist, ItemChecklistPersonalizado,
-    ChecklistExecutado, ItemChecklistExecutado, Arquivos_checklist, Oficina, usuarioOficina
+    ChecklistExecutado, ItemChecklistExecutado, Arquivos_checklist, Oficina, UsuarioOficina
 )
 from .email_utils import enviar_email_aprovacao, enviar_email_rejeicao
 
@@ -163,9 +163,9 @@ class ProfissionalAdmin(admin.ModelAdmin):
 
 @admin.register(Oficina)
 class OficinaAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'usuario', 'aprovado', 'cnpj')
+    list_display = ('nome', 'aprovado', 'cnpj')
     list_filter = ('aprovado',)
-    search_fields = ('nome', 'usuario__username', 'cnpj', 'email')
+    search_fields = ('nome', 'cnpj', 'email')
     ordering = ('nome',)
 
 @admin.register(Servico)
@@ -247,8 +247,8 @@ class ChecklistExecutadoAdmin(admin.ModelAdmin):
 
 @admin.register(ItemChecklistExecutado)
 class ItemChecklistExecutadoAdmin(admin.ModelAdmin):
-    list_display = ('checklist_executado', 'item_checklist', 'checked', 'resultado', 'data_criacao', 'data_atualizacao')    
-    list_filter = ('checked', 'resultado', 'item_checklist')
+    list_display = ('checklist_executado', 'item_checklist', 'resultado', 'data_criacao', 'data_atualizacao')    
+    list_filter = ('resultado', 'item_checklist')
     search_fields = ('item_checklist__checklist__nome', 'observacoes')
     ordering = ('checklist_executado', 'item_checklist__ordem')
 
@@ -259,8 +259,8 @@ class ArquivosChecklistAdmin(admin.ModelAdmin):
     search_fields = ('arquivo', 'item_checklist_executado')
     ordering = ('item_checklist_executado', 'arquivo')
 
-@admin.register(usuarioOficina)
-class usuarioOficinaAdmin(admin.ModelAdmin):
+@admin.register(UsuarioOficina)
+class UsuarioOficinaAdmin(admin.ModelAdmin):
     list_display = ('usuario', 'oficina', 'ativo', 'data_criacao', 'data_atualizacao')
     list_filter = ('ativo', 'data_criacao', 'data_atualizacao')
     search_fields = ('usuario__username', 'oficina__nome')

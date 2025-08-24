@@ -45,3 +45,4 @@ urllib3==2.5.0
 webencodings==0.5.1
 wheel==0.45.1
 whitenoise==6.9.0
+reportlab==4.0.9

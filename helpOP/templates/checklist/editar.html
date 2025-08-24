@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Checklist - HelpOP{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="text-warning mb-4">
+                <i class="fas fa-edit me-2"></i>Editar Checklist
+            </h2>
+            
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="text-warning">Checklist: {{ checklist.nome }}</h5>
+                    <p class="text-light">Oficina: {{ checklist.oficina.nome }}</p>
+                    <p class="text-light">Tipo: {{ checklist.tipo_veiculo.nome }}</p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="nome" class="form-label text-warning">Nome:</label>
+                            <input type="text" class="form-control" name="nome" value="{{ checklist.nome }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label text-warning">Descrição:</label>
+                            <textarea class="form-control" name="descricao" rows="3">{{ checklist.descricao }}</textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="ativo" id="ativo" {% if checklist.ativo %}checked{% endif %}>
+                                <label class="form-check-label text-warning" for="ativo">
+                                    Ativo
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                        <a href="{% url 'checklist_detalhes' checklist.id %}" class="btn btn-secondary">Cancelar</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

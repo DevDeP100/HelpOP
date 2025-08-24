@@ -128,6 +128,16 @@ body {
     box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
 }
 
+/* Inputs de data - garantir visibilidade do ícone do calendário */
+input[type="date"] {
+    color-scheme: dark;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(2);
+    cursor: pointer;
+}
+
 .form-label {
     color: var(--primary-yellow);
     font-weight: bold;

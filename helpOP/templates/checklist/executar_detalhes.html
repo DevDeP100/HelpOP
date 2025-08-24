@@ -11,10 +11,10 @@
                     <i class="fas fa-clipboard-check me-2"></i>Executando Checklist
                 </h2>
                 <div>
-                    <button type="submit" form="checklist-form" class="btn btn-success me-2">
+                    <button type="button" id="salvar-progresso-btn" class="btn btn-success me-2">
                         <i class="fas fa-save me-2"></i>Salvar Progresso
                     </button>
-                    <a href="{% url 'checklist_detalhes' checklist_executado.checklist.id %}" class="btn btn-outline-warning">
+                    <a href="{% url 'checklist_gerenciar_execucoes' checklist_executado.checklist.id %}" class="btn btn-outline-warning">
                         <i class="fas fa-arrow-left me-2"></i>Voltar
                     </a>
                 </div>
@@ -98,55 +98,105 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        {% regroup itens_executados by item_checklist.categoria as categorias_list %}
-                        {% for categoria in categorias_list %}
-                            <div class="mb-4">
-                                <h6 class="text-warning border-bottom pb-2">
-                                    <i class="fas fa-tools me-2"></i>{{ categoria.grouper.nome }}
-                                </h6>
-                                
-                                {% for item_executado in categoria.list %}
-                                    <div class="card mb-3 border-warning">
+                        {% if categorias_agrupadas %}
+                            {% for categoria_data in categorias_agrupadas %}
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                                        <h6 class="text-warning mb-0">
+                                            <i class="fas fa-tools me-2"></i>{{ categoria_data.categoria.nome }}
+                                        </h6>
+                                        <div class="d-flex align-items-center">
+                                             <span class="badge bg-secondary me-2">{{ categoria_data.itens|length }} itens</span>
+                                              <span class="badge bg-warning text-dark me-2 pendentes-badge" data-categoria-id="{{ categoria_data.categoria.id }}">0 pendentes</span>
+                                             <button type="button" class="btn btn-link text-warning p-0 toggle-categoria" 
+                                                    data-categoria-id="{{ categoria_data.categoria.id }}" 
+                                                    title="Expandir/Colapsar categoria">
+                                                <i class="fas fa-chevron-down toggle-icon" id="icon_{{ categoria_data.categoria.id }}"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="categoria-body" id="categoria-body-{{ categoria_data.categoria.id }}" data-categoria-id="{{ categoria_data.categoria.id }}">
+                                    
+                                    {% for item_executado in categoria_data.itens %}
+                                    <div class="card mb-3 border-warning item-card" data-item-id="{{ item_executado.id }}">
                                         <div class="card-body">
                                             <div class="row">
                                                 <div class="col-md-8">
-                                                    <h6 class="text-light mb-2">{{ item_executado.item_checklist.nome }}</h6>
-                                                    {% if item_executado.item_checklist.descricao %}
-                                                        <p class="text-muted small mb-2">{{ item_executado.item_checklist.descricao }}</p>
-                                                    {% endif %}
+                                                    <h6 class="text-light mb-2">
+                                                        {% if item_executado.item_checklist.item_padrao %}
+                                                            <span class="badge bg-info me-2">{{ item_executado.item_checklist.item_padrao.get_tipo_verificacao_display }}</span>
+                                                            {{ item_executado.item_checklist.item_padrao.nome }}
+                                                        {% else %}
+                                                            {{ item_executado.item_checklist.nome_personalizado|default:"Item Personalizado" }}
+                                                        {% endif %}
+                                                    </h6>
+
                                                     
                                                     <div class="mb-3">
-                                                        <span class="badge bg-info me-2">{{ item_executado.item_checklist.get_tipo_verificacao_display }}</span>
                                                         {% if item_executado.item_checklist.critico %}
                                                             <span class="badge bg-danger me-2">Crítico</span>
+                                                        {% endif %}
+                                                        {% if item_executado.item_checklist.obrigatorio %}
+                                                            <span class="badge bg-warning text-dark me-2">Obrigatório</span>
                                                         {% endif %}
                                                     </div>
                                                 </div>
                                                 
-                                                <div class="col-md-4">
-                                                    <div class="mb-3">
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox" 
-                                                                   id="checked_{{ item_executado.id }}" 
-                                                                   name="checked_{{ item_executado.id }}"
-                                                                   {% if item_executado.checked %}checked{% endif %}>
-                                                            <label class="form-check-label text-warning" for="checked_{{ item_executado.id }}">
-                                                                Verificado
-                                                            </label>
+                                            </div>
+                                            
+                                            <!-- Botões de Resultado -->
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <label class="form-label text-warning">Status do Item</label>
+                                                    <input type="hidden" id="resultado_{{ item_executado.id }}" name="resultado_{{ item_executado.id }}" value="{{ item_executado.resultado|default:'' }}">
+                                                    <div class="row g-2">
+                                                        <div class="col-4">
+                                                            <button type="button" class="btn btn-outline-success w-100 position-relative resultado-btn {% if item_executado.resultado == 'OK' %}resultado-selected-ok{% endif %}" 
+                                                                    data-value="OK" data-target="resultado_{{ item_executado.id }}">
+                                                                <span><i class="fas fa-check-circle"></i> OK</span>
+
+                                                                <i class="fas fa-check text-success resultado-check {% if item_executado.resultado == 'OK' %}d-block{% else %}d-none{% endif %}"></i>
+                                                            </button>
                                                         </div>
-                                                    </div>
-                                                    
-                                                    <div class="mb-3">
-                                                        <label for="resultado_{{ item_executado.id }}" class="form-label text-warning">Resultado</label>
-                                                        <select class="form-control" id="resultado_{{ item_executado.id }}" name="resultado_{{ item_executado.id }}">
-                                                            <option value="pendente" {% if item_executado.resultado == 'pendente' %}selected{% endif %}>Pendente</option>
-                                                            <option value="aprovado" {% if item_executado.resultado == 'aprovado' %}selected{% endif %}>Aprovado</option>
-                                                            <option value="reprovado" {% if item_executado.resultado == 'reprovado' %}selected{% endif %}>Reprovado</option>
-                                                            <option value="nao_aplicavel" {% if item_executado.resultado == 'nao_aplicavel' %}selected{% endif %}>Não Aplicável</option>
-                                                        </select>
+                                                        <div class="col-4">
+                                                            <button type="button" class="btn btn-outline-warning w-100 position-relative resultado-btn {% if item_executado.resultado == 'Atenção' %}resultado-selected-atencao{% endif %}" 
+                                                                    data-value="Atenção" data-target="resultado_{{ item_executado.id }}">
+                                                                <span><i class="fas fa-exclamation-triangle"></i> Atenção</span>
+
+                                                                <i class="fas fa-check text-success resultado-check {% if item_executado.resultado == 'Atenção' %}d-block{% else %}d-none{% endif %}"></i>
+                                                            </button>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <button type="button" class="btn btn-outline-danger w-100 position-relative resultado-btn {% if item_executado.resultado == 'Problema' %}resultado-selected-problema{% endif %}" 
+                                                                    data-value="Problema" data-target="resultado_{{ item_executado.id }}">
+                                                                <span><i class="fas fa-times-circle"></i> Problema</span>
+
+                                                                <i class="fas fa-check text-success resultado-check {% if item_executado.resultado == 'Problema' %}d-block{% else %}d-none{% endif %}"></i>
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
+                                            
+                                            <!-- Campo de Valor (apenas se tipo_resultado for 2) -->
+                                            {% if item_executado.item_checklist.item_padrao and item_executado.item_checklist.item_padrao.tipo_resultado == '2' or item_executado.item_checklist.tipo_resultado == '2' %}
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <label for="valor_{{ item_executado.id }}" class="form-label text-warning">Valor</label>
+                                                    {% if item_executado.item_checklist.item_padrao and item_executado.item_checklist.item_padrao.tipo_dado == '1' or item_executado.item_checklist.tipo_dado == '1' %}
+                                                        <input type="number" class="form-control" id="valor_{{ item_executado.id }}" 
+                                                               name="valor_{{ item_executado.id }}" 
+                                                               value="{{ item_executado.valor_resultado|default:'' }}" 
+                                                               placeholder="Digite o valor numérico...">
+                                                    {% else %}
+                                                        <input type="text" class="form-control" id="valor_{{ item_executado.id }}" 
+                                                               name="valor_{{ item_executado.id }}" 
+                                                               value="{{ item_executado.valor_resultado|default:'' }}" 
+                                                               placeholder="Digite o valor...">
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            {% endif %}
                                             
                                             <div class="row">
                                                 <div class="col-12">
@@ -158,17 +208,223 @@
                                         </div>
                                     </div>
                                 {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Atenção:</strong> Este checklist não possui itens personalizados configurados.
+                                <br>
+                                <a href="{% url 'checklist_gerenciar_itens' checklist_executado.checklist.id %}" class="btn btn-warning btn-sm mt-2">
+                                    <i class="fas fa-cog me-1"></i>Configurar Itens
+                                </a>
                             </div>
-                        {% endfor %}
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
     </form>
+    
+    <!-- Modal de Progresso -->
+    <div class="modal fade" id="progressoModal" tabindex="-1" aria-labelledby="progressoModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark">
+                <div class="modal-header border-warning">
+                    <h5 class="modal-title text-warning" id="progressoModalLabel">
+                        <i class="fas fa-chart-pie me-2"></i>Progresso do Checklist
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="text-center">
+                                <h4 class="text-success mb-1" id="itens-concluidos">0</h4>
+                                <small class="text-muted">Itens Concluídos</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <h4 class="text-warning mb-1" id="itens-pendentes">0</h4>
+                                <small class="text-muted">Itens Pendentes</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress mb-3" style="height: 20px;">
+                        <div class="progress-bar bg-success" role="progressbar" id="progress-bar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                            <span id="progress-text">0%</span>
+                        </div>
+                    </div>
+                    
+                    <div id="aviso-pendencias" class="alert alert-warning d-none">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Atenção:</strong> O checklist só poderá ser encerrado quando não houver pendências.
+                    </div>
+                    
+                    <div id="aviso-completo" class="alert alert-success d-none">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Parabéns!</strong> Todos os itens foram verificados. O checklist pode ser encerrado.
+                    </div>
+                </div>
+                <div class="modal-footer border-warning">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="submit" form="checklist-form" class="btn btn-success">
+                        <i class="fas fa-save me-2"></i>Confirmar Salvamento
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
+<style>
+        .resultado-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .resultado-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .btn-outline-success {
+            background-color: #198754 !important;
+            border-color: #198754 !important;
+            color: white !important;
+        }
+        
+        .btn-outline-success:hover {
+            background-color: #157347 !important;
+            border-color: #146c43 !important;
+            color: white !important;
+        }
+        
+        .btn-outline-warning {
+            background-color: #ffc107 !important;
+            border-color: #ffc107 !important;
+            color: white !important;
+        }
+        
+        .btn-outline-warning:hover {
+            background-color: #ffca2c !important;
+            border-color: #ffc720 !important;
+            color: white !important;
+        }
+        
+        .btn-outline-danger {
+            background-color: #dc3545 !important;
+            border-color: #dc3545 !important;
+            color: white !important;
+        }
+        
+        .btn-outline-danger:hover {
+            background-color: #bb2d3b !important;
+            border-color: #b02a37 !important;
+            color: white !important;
+        }
+        
+        .resultado-btn {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+        }
+        
+        .resultado-btn .fa-check[style*="display: block"],
+        .resultado-btn .fa-check.d-block {
+            background-color: white !important;
+            border-radius: 50% !important;
+            width: 20px !important;
+            height: 20px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
+            position: static !important;
+            margin-left: auto !important;
+        }
+        
+        /* Manter o texto visível sempre */
+        .resultado-btn span:first-child {
+            display: block !important;
+        }
+        
+        /* Garantir que o ícone de check seja visível quando selecionado */
+        .resultado-btn.selected .fa-check {
+            display: flex !important;
+        }
+        
+        /* Estilos para validação visual dos itens */
+        .item-pendente {
+            border: 2px solid #dc3545 !important;
+            box-shadow: 0 0 10px rgba(220, 53, 69, 0.3) !important;
+        }
+        
+        .item-preenchido {
+            border: 2px solid #198754 !important;
+            box-shadow: 0 0 10px rgba(25, 135, 84, 0.3) !important;
+        }
+        
+        /* Estilos para toggle de categorias */
+        .toggle-categoria {
+            transition: all 0.3s ease;
+            border: none;
+            background: transparent;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+        
+        .toggle-categoria:hover {
+            transform: scale(1.1);
+            color: #ffc107 !important;
+        }
+        
+        .toggle-categoria:focus {
+            box-shadow: none;
+            outline: none;
+        }
+        
+        .toggle-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        /* Transição suave para o corpo da categoria */
+        .categoria-body {
+            transition: all 0.3s ease;
+            display: none; /* Iniciar sempre colapsado */
+        }
+        
+        /* Responsivo - botões com largura e altura fixas */
+        @media (max-width: 768px) {
+            .resultado-btn {
+                min-width: 120px !important;
+                min-height: 45px !important;
+                width: 120px !important;
+                height: 45px !important;
+                font-size: 14px !important;
+                padding: 8px 12px !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+            }
+        }
+        
+        @media (max-width: 576px) {
+             .resultado-btn {
+                 min-width: 100px !important;
+                 min-height: 40px !important;
+                 width: 100px !important;
+                 height: 40px !important;
+                 font-size: 12px !important;
+                 padding: 6px 8px !important;
+             }
+         }
+    </style>
+
 <script>
     // Adicionar classe auth-pages ao body
     document.body.classList.add('auth-pages');
@@ -184,5 +440,262 @@
             console.log('Progresso alterado - auto-save disponível');
         }, 2000);
     });
-</script>
-{% endblock %} 
+    
+    // Controle dos botões de resultado
+    document.addEventListener('DOMContentLoaded', function() {
+        const resultadoBtns = document.querySelectorAll('.resultado-btn');
+        
+        resultadoBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const value = this.getAttribute('data-value');
+                const targetId = this.getAttribute('data-target');
+                const hiddenInput = document.getElementById(targetId);
+                
+                // Atualizar o valor do campo hidden
+                hiddenInput.value = value;
+                
+                // Remover seleção de todos os botões do mesmo grupo
+                const groupBtns = document.querySelectorAll(`[data-target="${targetId}"]`);
+                groupBtns.forEach(function(groupBtn) {
+                    // Remover background
+                    groupBtn.style.backgroundColor = '';
+                    // Remover classes
+                    groupBtn.classList.remove('selected');
+                    groupBtn.classList.remove('resultado-selected-ok');
+                    groupBtn.classList.remove('resultado-selected-atencao');
+                    groupBtn.classList.remove('resultado-selected-problema');
+                    // Esconder ícone de check
+                    const checkIcon = groupBtn.querySelector('.fa-check');
+                    if (checkIcon) {
+                        checkIcon.style.display = 'none';
+                        checkIcon.classList.remove('d-block');
+                        checkIcon.classList.add('d-none');
+                    }
+                    // Remover badge "Atual"
+                    const currentBadge = groupBtn.querySelector('.badge');
+                    if (currentBadge && currentBadge.textContent === 'Atual') {
+                        currentBadge.remove();
+                    }
+                });
+                
+                // Adicionar seleção ao botão clicado
+                this.classList.add('selected');
+                if (value === 'OK') {
+                    this.style.backgroundColor = 'rgba(25, 135, 84, 0.1)';
+                } else if (value === 'Atenção') {
+                    this.style.backgroundColor = 'rgba(255, 193, 7, 0.1)';
+                } else if (value === 'Problema') {
+                    this.style.backgroundColor = 'rgba(220, 53, 69, 0.1)';
+                }
+                
+                // Mostrar ícone de check no botão selecionado
+                const checkIcon = this.querySelector('.fa-check');
+                if (checkIcon) {
+                    checkIcon.style.display = 'block';
+                    checkIcon.classList.remove('d-none');
+                    checkIcon.classList.add('d-block');
+                }
+                
+
+                
+                // Disparar evento change para auto-save
+                hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+                
+                // Atualizar contador de pendências
+                atualizarContadorPendencias();
+            });
+        });
+        
+        // Auto-save para campos de valor
+        const valorInputs = document.querySelectorAll('input[id^="valor_"]');
+        valorInputs.forEach(function(input) {
+            input.addEventListener('input', function() {
+                // Disparar evento change para auto-save
+                this.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+        });
+        
+        // Aplicar estado inicial dos botões no carregamento
+        function aplicarEstadoInicial() {
+            const resultadoBtns = document.querySelectorAll('.resultado-btn');
+            
+            // Primeiro, limpar todos os botões
+            resultadoBtns.forEach(function(btn) {
+                btn.classList.remove('selected');
+                btn.classList.remove('resultado-selected-ok');
+                btn.classList.remove('resultado-selected-atencao');
+                btn.classList.remove('resultado-selected-problema');
+                btn.style.backgroundColor = '';
+                const checkIcon = btn.querySelector('.fa-check');
+                if (checkIcon) {
+                    checkIcon.style.display = 'none';
+                    checkIcon.classList.remove('d-block');
+                    checkIcon.classList.add('d-none');
+                }
+                // Remover badges "Atual" existentes
+                const currentBadge = btn.querySelector('.badge');
+                if (currentBadge && currentBadge.textContent === 'Atual') {
+                    currentBadge.remove();
+                }
+            });
+            
+            // Depois, aplicar o estado correto
+            resultadoBtns.forEach(function(btn) {
+                const targetId = btn.getAttribute('data-target');
+                const hiddenInput = document.getElementById(targetId);
+                const value = btn.getAttribute('data-value');
+                
+                // Se o botão tem o valor atual salvo
+                if (hiddenInput && hiddenInput.value === value) {
+                    btn.classList.add('selected');
+                    
+                    // Aplicar background
+                    if (value === 'OK') {
+                        btn.style.backgroundColor = 'rgba(25, 135, 84, 0.1)';
+                    } else if (value === 'Atenção') {
+                        btn.style.backgroundColor = 'rgba(255, 193, 7, 0.1)';
+                    } else if (value === 'Problema') {
+                        btn.style.backgroundColor = 'rgba(220, 53, 69, 0.1)';
+                    }
+                    
+                    // Mostrar ícone de check
+                    const checkIcon = btn.querySelector('.fa-check');
+                    if (checkIcon) {
+                        checkIcon.style.display = 'block';
+                        checkIcon.classList.remove('d-none');
+                        checkIcon.classList.add('d-block');
+                    }
+                    
+
+                }
+            });
+        }
+        
+        // Executar no carregamento
+        aplicarEstadoInicial();
+        
+        // Controle de colapso/expansão das categorias (accordion - apenas uma expandida por vez)
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.toggle-categoria')) {
+                const button = e.target.closest('.toggle-categoria');
+                const categoriaId = button.getAttribute('data-categoria-id');
+                const categoriaBody = document.getElementById(`categoria-body-${categoriaId}`);
+                const icon = document.getElementById(`icon_${categoriaId}`);
+                const isCurrentlyExpanded = categoriaBody.style.display === 'block';
+                
+                // Colapsar todas as categorias primeiro
+                document.querySelectorAll('.categoria-body').forEach(body => {
+                    body.style.display = 'none';
+                });
+                document.querySelectorAll('.toggle-icon').forEach(toggleIcon => {
+                    toggleIcon.className = 'fas fa-chevron-down toggle-icon';
+                });
+                document.querySelectorAll('.toggle-categoria').forEach(btn => {
+                    btn.setAttribute('title', 'Expandir categoria');
+                });
+                
+                // Se a categoria clicada não estava expandida, expandir apenas ela
+                if (!isCurrentlyExpanded) {
+                    categoriaBody.style.display = 'block';
+                    icon.className = 'fas fa-chevron-up toggle-icon';
+                    button.setAttribute('title', 'Colapsar categoria');
+                }
+            }
+        });
+        
+        // Função para atualizar contagem de pendências
+         function atualizarContadorPendencias() {
+             document.querySelectorAll('.pendentes-badge').forEach(badge => {
+                 const categoriaId = badge.getAttribute('data-categoria-id');
+                 const categoriaBody = document.querySelector(`.categoria-body[data-categoria-id="${categoriaId}"]`);
+                 
+                 if (categoriaBody) {
+                     const totalItens = categoriaBody.querySelectorAll('.card.mb-3').length;
+                     const itensSelecionados = categoriaBody.querySelectorAll('.resultado-btn.selected').length;
+                     const pendentes = totalItens - itensSelecionados;
+                     
+                     badge.textContent = `${pendentes} pendentes`;
+                     
+                     if (pendentes === 0) {
+                         badge.style.display = 'none';
+                     } else {
+                         badge.style.display = 'inline-block';
+                     }
+                 }
+             });
+         }
+        
+        // Atualizar contadores inicialmente
+         atualizarContadorPendencias();
+         
+         // Controle do botão Salvar Progresso
+         document.getElementById('salvar-progresso-btn').addEventListener('click', function() {
+             calcularEstatisticasProgresso();
+             const progressoModal = new bootstrap.Modal(document.getElementById('progressoModal'));
+             progressoModal.show();
+         });
+         
+         // Função para calcular estatísticas do progresso
+         function calcularEstatisticasProgresso() {
+             const totalItens = document.querySelectorAll('.resultado-btn').length / 3; // 3 botões por item
+             const itensSelecionados = document.querySelectorAll('.resultado-btn.selected').length;
+             const pendentes = totalItens - itensSelecionados;
+             const percentual = totalItens > 0 ? Math.round((itensSelecionados / totalItens) * 100) : 0;
+             
+             // Atualizar elementos do modal
+             document.getElementById('itens-concluidos').textContent = itensSelecionados;
+             document.getElementById('itens-pendentes').textContent = pendentes;
+             document.getElementById('progress-bar').style.width = percentual + '%';
+             document.getElementById('progress-bar').setAttribute('aria-valuenow', percentual);
+             document.getElementById('progress-text').textContent = percentual + '%';
+             
+             // Mostrar avisos apropriados
+             const avisoPendencias = document.getElementById('aviso-pendencias');
+             const avisoCompleto = document.getElementById('aviso-completo');
+             
+             if (pendentes > 0) {
+                 avisoPendencias.classList.remove('d-none');
+                 avisoCompleto.classList.add('d-none');
+             } else {
+                 avisoPendencias.classList.add('d-none');
+                 avisoCompleto.classList.remove('d-none');
+             }
+         }
+     });
+
+
+// Função para validar itens e aplicar bordas coloridas
+function validarItens() {
+    const itemCards = document.querySelectorAll('.item-card');
+    
+    itemCards.forEach(card => {
+        const itemId = card.getAttribute('data-item-id');
+        const resultadoSelecionado = card.querySelector('.resultado-btn.selected, .resultado-btn[class*="resultado-selected"]');
+        
+        // Remove classes anteriores
+        card.classList.remove('item-pendente', 'item-preenchido');
+        
+        // Aplica classe baseada no preenchimento
+        if (resultadoSelecionado) {
+            card.classList.add('item-preenchido');
+        } else {
+            card.classList.add('item-pendente');
+        }
+    });
+}
+
+// Chamar validação inicial
+validarItens();
+
+// Adicionar validação aos cliques dos botões de resultado
+document.querySelectorAll('.resultado-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        // Aguardar um pouco para que a seleção seja processada
+        setTimeout(validarItens, 100);
+    });
+});
+
+
+
+ </script>
+{% endblock %}

@@ -251,6 +251,7 @@
 
         main {
             min-height: calc(100vh - 100px);
+            padding-top: 100px; /* Compensar o navbar fixo para todas as páginas */
         }
         
         /* Padding-top apenas para páginas de autenticação */
@@ -259,6 +260,10 @@
         }
         
         @media (max-width: 991.98px) {
+            main {
+                padding-top: 80px; /* Menor padding em telas menores */
+            }
+            
             .auth-pages main {
                 padding-top: 80px; /* Menor padding em telas menores */
             }
