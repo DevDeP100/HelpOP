@@ -128,7 +128,7 @@ class ItemChecklistSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'categoria', 'categoria_nome', 'nome', 'descricao',
             'tipo_verificacao', 'critico', 'ordem', 'ativo', 'data_criacao', 'data_atualizacao',
-            'usuario', 'obrigatorio', 'tipo_resultado', 'valor_resultado', 'created_by', 'updated_by'
+            'usuario', 'obrigatorio', 'tipo_resultado', 'tipo_dado', 'created_by', 'updated_by'
         ]
         read_only_fields = ['data_criacao', 'data_atualizacao']
 
