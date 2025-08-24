@@ -44,7 +44,7 @@ urlpatterns = [
     path('manutencoes/', views.manutencoes, name='manutencoes'),
     path('servicos/', views.servicos, name='servicos'),
     path('profissionais/', views.profissionais, name='profissionais'),
-    path('dashboard/', views.dashboard, name='dashboard'),
+   # path('dashboard/', views.dashboard, name='dashboard'),
     path('verificar-email/<int:user_id>/', views.verificar_email, name='verificar_email'),
     path('reenviar-codigo/<int:user_id>/', views.reenviar_codigo, name='reenviar_codigo'),
     # Administração

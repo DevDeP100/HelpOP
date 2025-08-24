@@ -55,7 +55,7 @@ def login_view(request):
             
             login(request, user)
             messages.success(request, f'Bem-vindo de volta, {user.get_full_name() or user.username}!')
-            return redirect('dashboard')
+            return redirect('checklist_gerenciar')
         else:
             messages.error(request, 'Usuário ou senha incorretos.')
     

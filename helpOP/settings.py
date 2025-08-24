@@ -180,7 +180,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Login/Logout URLs
 LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/dashboard/'
+LOGIN_REDIRECT_URL = '/checklist_gerenciar/'
 LOGOUT_REDIRECT_URL = '/'
 
 # Message tags configuration
