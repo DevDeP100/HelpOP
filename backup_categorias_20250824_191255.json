@@ -1,0 +1,122 @@
+[
+  {
+    "id": 22,
+    "nome": "Motor",
+    "descricao": "Verificações relacionadas ao motor e sistema de combustão",
+    "ordem": 1,
+    "ativo": true,
+    "data_criacao": "2025-08-21T16:27:18.540552+00:00",
+    "usuario_id": 3,
+    "data_atualizacao": "2025-08-21T16:27:18.540852+00:00",
+    "created_by_id": 3,
+    "updated_by_id": 3
+  },
+  {
+    "id": 23,
+    "nome": "Freios",
+    "descricao": "Sistema de frenagem e componentes relacionados",
+    "ordem": 2,
+    "ativo": true,
+    "data_criacao": "2025-08-21T16:27:18.583358+00:00",
+    "usuario_id": 3,
+    "data_atualizacao": "2025-08-21T16:27:18.583366+00:00",
+    "created_by_id": 3,
+    "updated_by_id": 3
+  },
+  {
+    "id": 24,
+    "nome": "Suspensão",
+    "descricao": "Sistema de suspensão e direção",
+    "ordem": 3,
+    "ativo": true,
+    "data_criacao": "2025-08-21T16:27:18.609880+00:00",
+    "usuario_id": 3,
+    "data_atualizacao": "2025-08-21T16:27:18.609897+00:00",
+    "created_by_id": 3,
+    "updated_by_id": 3
+  },
+  {
+    "id": 25,
+    "nome": "Direção",
+    "descricao": "Sistema de direção e componentes",
+    "ordem": 4,
+    "ativo": true,
+    "data_criacao": "2025-08-21T16:27:18.638778+00:00",
+    "usuario_id": 3,
+    "data_atualizacao": "2025-08-21T16:27:18.638785+00:00",
+    "created_by_id": 3,
+    "updated_by_id": 3
+  },
+  {
+    "id": 26,
+    "nome": "Pneus e Rodas",
+    "descricao": "Pneus, rodas e componentes relacionados",
+    "ordem": 5,
+    "ativo": true,
+    "data_criacao": "2025-08-21T16:27:18.655529+00:00",
+    "usuario_id": 3,
+    "data_atualizacao": "2025-08-21T16:27:18.655534+00:00",
+    "created_by_id": 3,
+    "updated_by_id": 3
+  },
+  {
+    "id": 27,
+    "nome": "Transmissão",
+    "descricao": "Sistema de transmissão e embreagem",
+    "ordem": 6,
+    "ativo": true,
+    "data_criacao": "2025-08-21T16:27:18.674165+00:00",
+    "usuario_id": 3,
+    "data_atualizacao": "2025-08-21T16:27:18.674171+00:00",
+    "created_by_id": 3,
+    "updated_by_id": 3
+  },
+  {
+    "id": 28,
+    "nome": "Elétrica",
+    "descricao": "Sistema elétrico e eletrônico",
+    "ordem": 7,
+    "ativo": true,
+    "data_criacao": "2025-08-21T16:27:18.687941+00:00",
+    "usuario_id": 3,
+    "data_atualizacao": "2025-08-21T16:27:18.687951+00:00",
+    "created_by_id": 3,
+    "updated_by_id": 3
+  },
+  {
+    "id": 29,
+    "nome": "Carroceria",
+    "descricao": "Estrutura da carroceria e componentes externos",
+    "ordem": 8,
+    "ativo": true,
+    "data_criacao": "2025-08-21T16:27:18.704456+00:00",
+    "usuario_id": 3,
+    "data_atualizacao": "2025-08-21T16:27:18.704463+00:00",
+    "created_by_id": 3,
+    "updated_by_id": 3
+  },
+  {
+    "id": 30,
+    "nome": "Interior",
+    "descricao": "Componentes internos do veículo",
+    "ordem": 9,
+    "ativo": true,
+    "data_criacao": "2025-08-21T16:27:18.717482+00:00",
+    "usuario_id": 3,
+    "data_atualizacao": "2025-08-21T16:27:18.717491+00:00",
+    "created_by_id": 3,
+    "updated_by_id": 3
+  },
+  {
+    "id": 31,
+    "nome": "Segurança",
+    "descricao": "Itens de segurança obrigatórios e opcionais",
+    "ordem": 10,
+    "ativo": true,
+    "data_criacao": "2025-08-21T16:27:18.734041+00:00",
+    "usuario_id": 3,
+    "data_atualizacao": "2025-08-21T16:27:18.734049+00:00",
+    "created_by_id": 3,
+    "updated_by_id": 3
+  }
+]
