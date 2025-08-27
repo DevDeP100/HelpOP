@@ -283,6 +283,14 @@ class ChecklistExecutadoViewSet(viewsets.ModelViewSet):
         else:
             return ChecklistExecutado.objects.all()
     
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            print("❌ Erros de validação:", serializer.errors)  # aparece no console
+            return Response(serializer.errors, status=400)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=201)
+    
     @swagger_auto_schema(
         operation_description="Retorna execução de checklist com todos os detalhes incluindo itens executados",
         responses={
@@ -297,6 +305,12 @@ class ChecklistExecutadoViewSet(viewsets.ModelViewSet):
         serializer = ChecklistExecutadoDetalhadoSerializer(checklist_executado)
         return Response(serializer.data)
 
+    def perform_create(self, serializer):
+        serializer.save(
+            created_by=self.request.user,
+            updated_by=self.request.user
+        )
+        
 class ItemChecklistExecutadoViewSet(viewsets.ModelViewSet):
     serializer_class = ItemChecklistExecutadoSerializer
     permission_classes = [permissions.IsAuthenticated]

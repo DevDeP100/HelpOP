@@ -220,26 +220,21 @@ class ItemChecklistPersonalizadoSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['data_criacao', 'data_atualizacao']
 
-class ChecklistExecutadoSerializer(serializers.ModelSerializer):
-    checklist_nome = serializers.CharField(source='checklist.nome', read_only=True)
-    veiculo_info = serializers.CharField(source='veiculo.__str__', read_only=True)
-    usuario_nome = serializers.CharField(source='usuario.get_full_name', read_only=True)
-    created_by_nome = serializers.CharField(source='created_by.get_full_name', read_only=True)
-    updated_by_nome = serializers.CharField(source='updated_by.get_full_name', read_only=True)
-    
+
+class ArquivosChecklistSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ChecklistExecutado
+        model = Arquivos_checklist
         fields = [
-            'id', 'checklist', 'checklist_nome', 'veiculo', 'veiculo_info',
-            'data_execucao', 'usuario', 'usuario_nome', 'observacoes',
-            'status', 'data_criacao', 'data_atualizacao', 'created_by', 'created_by_nome', 'updated_by', 'updated_by_nome'
+            'id', 'arquivo', 'tipo', 'data_criacao', 'data_atualizacao'
         ]
-        read_only_fields = ['data_execucao', 'data_criacao', 'data_atualizacao']
+        read_only_fields = ['data_criacao', 'data_atualizacao']
+
 
 class ItemChecklistExecutadoSerializer(serializers.ModelSerializer):
-    checklist_executado_info = serializers.CharField(source='checklist_executado.__str__', read_only=True)
+    arquivos = ArquivosChecklistSerializer(many=True, read_only=True)
+
     item_checklist_info = serializers.SerializerMethodField()
-    
+
     def get_item_checklist_info(self, obj):
         if obj.item_checklist:
             return {
@@ -259,27 +254,55 @@ class ItemChecklistExecutadoSerializer(serializers.ModelSerializer):
                 } if obj.item_checklist.item_padrao else None
             }
         return None
-    
+
     class Meta:
         model = ItemChecklistExecutado
         fields = [
-            'id', 'checklist_executado', 'checklist_executado_info',
-            'item_checklist', 'item_checklist_info', 'resultado', 'valor_resultado', 'observacoes',
-            'data_criacao', 'data_atualizacao', 'created_by', 'updated_by'
+            'id',
+            'resultado',
+            'valor_resultado',
+            'observacoes',
+            'item_checklist_info',
+            'item_checklist',
+            'arquivos',
+            'data_criacao',
+            'data_atualizacao'
         ]
         read_only_fields = ['data_criacao', 'data_atualizacao']
 
-class ArquivosChecklistSerializer(serializers.ModelSerializer):
-    item_checklist_executado_info = serializers.CharField(source='item_checklist_executado.__str__', read_only=True)
-    
-    class Meta:
-        model = Arquivos_checklist
-        fields = [
-            'id', 'item_checklist_executado', 'item_checklist_executado_info',
-            'arquivo', 'tipo', 'data_criacao', 'data_atualizacao', 'created_by', 'updated_by'
-        ]
+class ChecklistExecutadoSerializer(serializers.ModelSerializer):
+    checklist_nome = serializers.CharField(source='checklist.nome', read_only=True)
+    veiculo_info = serializers.CharField(source='veiculo.__str__', read_only=True)
+    usuario_nome = serializers.CharField(source='usuario.get_full_name', read_only=True)
+    created_by_nome = serializers.CharField(source='created_by.get_full_name', read_only=True)
+    updated_by_nome = serializers.CharField(source='updated_by.get_full_name', read_only=True)
 
-# Serializers para listas detalhadas
+    # agora sem read_only, para aceitar no POST
+    itens_executados = ItemChecklistExecutadoSerializer(many=True, required=False)
+
+    class Meta:
+        model = ChecklistExecutado
+        fields = [
+            'id', 'checklist', 'checklist_nome', 'veiculo', 'veiculo_info',
+            'data_execucao', 'usuario', 'usuario_nome', 'observacoes',
+            'status', 'data_criacao', 'data_atualizacao',
+            'created_by', 'created_by_nome', 'updated_by', 'updated_by_nome',
+            'itens_executados'
+        ]
+        read_only_fields = ['data_execucao', 'data_criacao', 'data_atualizacao']
+
+    def create(self, validated_data):
+        itens_data = validated_data.pop('itens_executados', [])
+        checklist_executado = ChecklistExecutado.objects.create(**validated_data)
+
+        for item_data in itens_data:
+            ItemChecklistExecutado.objects.create(
+                checklist_executado=checklist_executado,
+                **item_data
+            )
+
+        return checklist_executado
+
 class ChecklistDetalhadoSerializer(serializers.ModelSerializer):
     oficina = OficinaSerializer(read_only=True)
     tipo_veiculo = TipoVeiculoSerializer(read_only=True)
@@ -350,6 +373,16 @@ class ChecklistExecutadoComItensAgrupadosSerializer(serializers.ModelSerializer)
         
         # Ordenar categorias pela ordem
         return sorted(categorias_agrupadas.values(), key=lambda x: x['categoria']['ordem'])
+    
+    def create(self, validated_data):
+        itens_data = validated_data.pop('itens_executados', [])
+        checklist_executado = ChecklistExecutado.objects.create(**validated_data)
+        for item_data in itens_data:
+            ItemChecklistExecutado.objects.create(
+                checklist_executado=checklist_executado,
+                **item_data
+            )
+        return checklist_executado
     
     class Meta:
         model = ChecklistExecutado
