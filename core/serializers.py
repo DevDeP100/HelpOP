@@ -29,14 +29,15 @@ class VeiculoSerializer(serializers.ModelSerializer):
         read_only_fields = ['data_criacao', 'data_atualizacao']
 
 class OficinaSerializer(serializers.ModelSerializer):
-    usuario_nome = serializers.CharField(source='usuario.get_full_name', read_only=True)
+    # Remova a linha abaixo se o campo não existe no model
+    # usuario_nome = serializers.CharField(source='usuario.get_full_name', read_only=True)
     created_by_nome = serializers.CharField(source='created_by.get_full_name', read_only=True)
     updated_by_nome = serializers.CharField(source='updated_by.get_full_name', read_only=True)
     
     class Meta:
         model = Oficina
         fields = [
-            'id', 'usuario', 'usuario_nome', 'nome', 'endereco', 'telefone',
+            'id', 'nome', 'endereco', 'telefone',
             'email', 'site', 'cnpj', 'aprovado',
             'data_criacao', 'data_atualizacao', 'created_by', 'created_by_nome', 'updated_by', 'updated_by_nome'
         ]
@@ -303,6 +304,17 @@ class ChecklistExecutadoSerializer(serializers.ModelSerializer):
 
         return checklist_executado
 
+
+class ChecklistComItensSerializer(serializers.ModelSerializer):
+    itens = ItemChecklistPersonalizadoSerializer(many=True, source="itens_personalizados", read_only=True)
+
+    class Meta:
+        model = Checklist
+        fields = [
+            "id", "nome", "descricao", "tipo_veiculo", "oficina",
+            "itens"  # já retorna os itens personalizados desse checklist
+        ]
+        
 class ChecklistDetalhadoSerializer(serializers.ModelSerializer):
     oficina = OficinaSerializer(read_only=True)
     tipo_veiculo = TipoVeiculoSerializer(read_only=True)
