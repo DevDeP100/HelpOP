@@ -280,7 +280,11 @@ class ChecklistExecutadoSerializer(serializers.ModelSerializer):
 
     # agora sem read_only, para aceitar no POST
     itens_executados = ItemChecklistExecutadoSerializer(many=True, required=False)
-
+    total_itens = serializers.SerializerMethodField()
+    itens_ok = serializers.SerializerMethodField()
+    itens_atencao = serializers.SerializerMethodField()
+    itens_problema = serializers.SerializerMethodField()
+    
     class Meta:
         model = ChecklistExecutado
         fields = [
@@ -308,6 +312,19 @@ class ChecklistExecutadoSerializer(serializers.ModelSerializer):
             )
 
         return checklist_executado
+    
+    def get_total_itens(self, obj):
+        return obj.itens_executados.count()
+
+    def get_itens_ok(self, obj):
+        return obj.itens_executados.filter(resultado='1').count()
+
+    def get_itens_atencao(self, obj):
+        return obj.itens_executados.filter(resultado='2').count()
+
+    def get_itens_problema(self, obj):
+        return obj.itens_executados.filter(resultado='3').count()
+    
 
 class ChecklistComItensSerializer(serializers.ModelSerializer):
     itens = ItemChecklistPersonalizadoSerializer(many=True, source="itens_personalizados", read_only=True)
