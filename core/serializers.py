@@ -293,17 +293,21 @@ class ChecklistExecutadoSerializer(serializers.ModelSerializer):
         read_only_fields = ['data_execucao', 'data_criacao', 'data_atualizacao']
 
     def create(self, validated_data):
+        request = self.context.get("request")
+        user = request.user if request else None
+
         itens_data = validated_data.pop('itens_executados', [])
         checklist_executado = ChecklistExecutado.objects.create(**validated_data)
 
         for item_data in itens_data:
             ItemChecklistExecutado.objects.create(
                 checklist_executado=checklist_executado,
+                created_by=user,
+                updated_by=user,
                 **item_data
             )
 
         return checklist_executado
-
 
 class ChecklistComItensSerializer(serializers.ModelSerializer):
     itens = ItemChecklistPersonalizadoSerializer(many=True, source="itens_personalizados", read_only=True)

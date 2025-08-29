@@ -311,6 +311,7 @@ class ChecklistExecutadoViewSet(viewsets.ModelViewSet):
             updated_by=self.request.user
         )
         
+        
 class ItemChecklistExecutadoViewSet(viewsets.ModelViewSet):
     serializer_class = ItemChecklistExecutadoSerializer
     permission_classes = [permissions.IsAuthenticated]
