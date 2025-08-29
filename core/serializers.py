@@ -292,7 +292,7 @@ class ChecklistExecutadoSerializer(serializers.ModelSerializer):
             'data_execucao', 'usuario', 'usuario_nome', 'observacoes',
             'status', 'data_criacao', 'data_atualizacao',
             'created_by', 'created_by_nome', 'updated_by', 'updated_by_nome',
-            'itens_executados'
+            'itens_executados','total_itens', 'itens_ok', 'itens_atencao', 'itens_problema',
         ]
         read_only_fields = ['data_execucao', 'data_criacao', 'data_atualizacao']
 
