@@ -284,6 +284,7 @@ class ChecklistExecutadoSerializer(serializers.ModelSerializer):
     itens_ok = serializers.SerializerMethodField()
     itens_atencao = serializers.SerializerMethodField()
     itens_problema = serializers.SerializerMethodField()
+    itens_pendente = serializers.SerializerMethodField()
     
     class Meta:
         model = ChecklistExecutado
@@ -292,7 +293,7 @@ class ChecklistExecutadoSerializer(serializers.ModelSerializer):
             'data_execucao', 'usuario', 'usuario_nome', 'observacoes',
             'status', 'data_criacao', 'data_atualizacao',
             'created_by', 'created_by_nome', 'updated_by', 'updated_by_nome',
-            'itens_executados','total_itens', 'itens_ok', 'itens_atencao', 'itens_problema',
+            'itens_executados','total_itens', 'itens_ok', 'itens_atencao', 'itens_problema', 'itens_pendente'
         ]
         read_only_fields = ['data_execucao', 'data_criacao', 'data_atualizacao']
 
@@ -324,6 +325,9 @@ class ChecklistExecutadoSerializer(serializers.ModelSerializer):
 
     def get_itens_problema(self, obj):
         return obj.itens_executados.filter(resultado='3').count()
+    
+    def get_itens_pendente(self, obj):
+        return obj.itens_executados.filter(resultado='4').count()
     
 
 class ChecklistComItensSerializer(serializers.ModelSerializer):
