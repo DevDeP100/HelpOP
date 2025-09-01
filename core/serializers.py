@@ -233,7 +233,6 @@ class ArquivosChecklistSerializer(serializers.ModelSerializer):
 
 class ItemChecklistExecutadoSerializer(serializers.ModelSerializer):
     arquivos = ArquivosChecklistSerializer(many=True, read_only=True)
-
     item_checklist_info = serializers.SerializerMethodField()
 
     def get_item_checklist_info(self, obj):
@@ -270,6 +269,7 @@ class ItemChecklistExecutadoSerializer(serializers.ModelSerializer):
             'data_atualizacao'
         ]
         read_only_fields = ['data_criacao', 'data_atualizacao']
+
 
 class ChecklistExecutadoSerializer(serializers.ModelSerializer):
     checklist_nome = serializers.CharField(source='checklist.nome', read_only=True)
@@ -329,16 +329,6 @@ class ChecklistExecutadoSerializer(serializers.ModelSerializer):
     def get_itens_pendente(self, obj):
         return obj.itens_executados.filter(resultado='4').count()
     
-
-class ChecklistComItensSerializer(serializers.ModelSerializer):
-    itens = ItemChecklistPersonalizadoSerializer(many=True, source="itens_personalizados", read_only=True)
-
-    class Meta:
-        model = Checklist
-        fields = [
-            "id", "nome", "descricao", "tipo_veiculo", "oficina",
-            "itens"  # já retorna os itens personalizados desse checklist
-        ]
         
 class ChecklistDetalhadoSerializer(serializers.ModelSerializer):
     oficina = OficinaSerializer(read_only=True)
@@ -356,19 +346,58 @@ class ChecklistDetalhadoSerializer(serializers.ModelSerializer):
         read_only_fields = ['data_criacao', 'data_atualizacao']
 
 class ChecklistExecutadoDetalhadoSerializer(serializers.ModelSerializer):
-    checklist = ChecklistSerializer(read_only=True)
-    veiculo = VeiculoSerializer(read_only=True)
-    usuario = UsuarioSerializer(read_only=True)
-    itens_executados = ItemChecklistExecutadoSerializer(many=True, read_only=True, source='itens_executados')
-    
+    checklist_nome = serializers.CharField(source='checklist.nome', read_only=True)
+    veiculo_info = serializers.CharField(source='veiculo.__str__', read_only=True)
+    usuario_nome = serializers.CharField(source='usuario.get_full_name', read_only=True)
+    created_by_nome = serializers.CharField(source='created_by.get_full_name', read_only=True)
+    updated_by_nome = serializers.CharField(source='updated_by.get_full_name', read_only=True)
+
+    itens_executados = ItemChecklistExecutadoSerializer(many=True)
+
+    total_itens = serializers.SerializerMethodField()
+    itens_ok = serializers.SerializerMethodField()
+    itens_atencao = serializers.SerializerMethodField()
+    itens_problema = serializers.SerializerMethodField()
+
     class Meta:
         model = ChecklistExecutado
         fields = [
-            'id', 'checklist', 'veiculo', 'data_execucao', 'usuario',
-            'observacoes', 'data_criacao', 'data_atualizacao', 'status', 'itens_executados', 'created_by', 'updated_by'
+            'id',
+            'checklist',
+            'checklist_nome',
+            'veiculo',
+            'veiculo_info',
+            'data_execucao',
+            'usuario',
+            'usuario_nome',
+            'observacoes',
+            'status',
+            'data_criacao',
+            'data_atualizacao',
+            'created_by',
+            'created_by_nome',
+            'updated_by',
+            'updated_by_nome',
+            'itens_executados',
+            'total_itens',
+            'itens_ok',
+            'itens_atencao',
+            'itens_problema'
         ]
-        read_only_fields = ['data_execucao', 'data_criacao', 'data_atualizacao']
 
+    def get_total_itens(self, obj):
+        return obj.itens_executados.count()
+
+    def get_itens_ok(self, obj):
+        return obj.itens_executados.filter(resultado='1').count()
+
+    def get_itens_atencao(self, obj):
+        return obj.itens_executados.filter(resultado='2').count()
+
+    def get_itens_problema(self, obj):
+        return obj.itens_executados.filter(resultado='3').count()
+    
+    
 class ChecklistExecutadoComItensAgrupadosSerializer(serializers.ModelSerializer):
     checklist = ChecklistSerializer(read_only=True)
     veiculo = VeiculoSerializer(read_only=True)

@@ -267,7 +267,7 @@ class ChecklistExecutadoViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         if self.request.user.is_staff:
-            return ChecklistExecutado.objects.all()
+            return ChecklistExecutado.objects.all().order_by('-data_criacao')
         elif self.request.user.is_oficina:
             try:
                 oficina = UsuarioOficina.objects.get(usuario=self.request.user)
